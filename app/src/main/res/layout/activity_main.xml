@@ -12,7 +12,6 @@
         android:layout_height="60dp"
         android:layout_marginEnd="48dp"
         android:background="@color/colorAccent"
-        android:defaultFocusHighlightEnabled="false"
         android:drawableStart="@android:drawable/ic_media_next"
         app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -28,7 +27,6 @@
         android:layout_marginStart="28dp"
         android:layout_marginTop="8dp"
         android:background="@color/colorAccent"
-        android:defaultFocusHighlightEnabled="false"
         android:drawableStart="@android:drawable/ic_media_previous"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonPlay4"
@@ -69,7 +67,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="28dp"
-        android:shadowColor="10"
+        
         android:text="Songs"
         android:textColor="@color/colorAccent"
         app:layout_constraintEnd_toStartOf="@+id/buttonAlbum"
@@ -83,7 +81,7 @@
         android:layout_height="57dp"
         android:layout_marginEnd="16dp"
         android:text="Album"
-        android:textColor="?attr/colorAccent"
+        android:textColor="@color/colorAccent"
         app:layout_constraintBaseline_toBaselineOf="@+id/buttonSongs"
         app:layout_constraintEnd_toStartOf="@+id/buttonFlashBack" />
 

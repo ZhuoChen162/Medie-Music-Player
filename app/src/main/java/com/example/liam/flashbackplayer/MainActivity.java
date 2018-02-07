@@ -1,13 +1,17 @@
 package com.example.liam.flashbackplayer;
 
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.view.View;
 import android.media.MediaPlayer;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -16,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        readMusicFiles();
 
 //        MediaPlayer mediaPlayer;
 //        int MEDIA_RES_ID = R.raw.jazz_in_paris;
@@ -44,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // play the current song
-        Button play = (Button) findViewById(R.id.buttonPlay);
+        /*Button play = (Button) findViewById(R.id.buttonPlay);
         play.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
@@ -89,6 +93,30 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+*/
+    }
 
+    private void readMusicFiles() {
+        //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
+
+        String state = Environment.getExternalStorageState();
+        if (!(Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
+            Log.e("readMusicFiles", "Error: files cannot be read.");
+            System.exit(-1);
+        }
+        //open default Android music directory
+        try {
+            File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+            String[] children = musicDir.list();
+            if(children != null) {
+                for(String str : children) {
+                    Log.d("readMusicFiles", str);
+                }
+            }
+        } catch(Exception e) {
+            Log.d("readMusicFiles", e.getMessage());
+        }
+
+        Log.d("readMusicFiles", "got here!");
     }
 }
