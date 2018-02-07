@@ -1,6 +1,9 @@
 package com.example.liam.flashbackplayer;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getPermsExplicit();
         readMusicFiles();
 
 //        MediaPlayer mediaPlayer;
@@ -96,9 +100,15 @@ public class MainActivity extends AppCompatActivity {
 */
     }
 
+    private void getPermsExplicit() {
+        //get explicit permission to read from external storage
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
+        }
+    }
+
     private void readMusicFiles() {
         //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
-
         String state = Environment.getExternalStorageState();
         if (!(Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
             Log.e("readMusicFiles", "Error: files cannot be read.");
@@ -107,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         //open default Android music directory
         try {
             File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+            Log.d("readMusicFiles", musicDir.getName());
             String[] children = musicDir.list();
             if(children != null) {
                 for(String str : children) {
@@ -116,7 +127,5 @@ public class MainActivity extends AppCompatActivity {
         } catch(Exception e) {
             Log.d("readMusicFiles", e.getMessage());
         }
-
-        Log.d("readMusicFiles", "got here!");
     }
 }
