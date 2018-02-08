@@ -10,16 +10,17 @@ public class Song {
     private String name;
     private String fileName;
     private String artist;
-    //private String album;
+    private String albumName;
     private int length; //length in milliseconds
     private ArrayList<Integer> times;
     private ArrayList<String> locations;
 
-    public Song(String name, String fileName, String artist, int length) {
+    public Song(String name, String fileName, String artist, int length, String albumName) {
         this.name = name;
         this.fileName = fileName;
         this.artist = artist;
         this.length = length;
+        this.albumName = albumName;
         this.times = new ArrayList<Integer>();
         this.locations = new ArrayList<String>();
     }
@@ -43,6 +44,10 @@ public class Song {
 
     public int getLength() {
         return length;
+    }
+
+    public String getAlbumName() {
+        return albumName;
     }
 
     public ArrayList<Integer> getTimes() {

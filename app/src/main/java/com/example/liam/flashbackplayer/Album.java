@@ -9,16 +9,18 @@ import java.util.ArrayList;
 public class Album {
     private String name;
     private ArrayList<Song> songList;
-    private String year;
 
-    public Album(String name, String year) {
+    public Album(String name) {
         this.name = name;
-        this.year = year;
         this.songList = new ArrayList<Song>();
     }
 
     public void addSong(Song song) {
         this.songList.add(song);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public ArrayList<Song> getSongList() {
