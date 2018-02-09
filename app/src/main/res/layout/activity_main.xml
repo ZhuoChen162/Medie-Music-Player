@@ -7,18 +7,19 @@
     tools:context="com.example.liam.flashbackplayer.MainActivity">
 
     <Button
-        android:id="@+id/buttonPlay"
+        android:id="@+id/skipForward"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="48dp"
         android:background="@color/colorAccent"
         android:drawableStart="@android:drawable/ic_media_next"
-        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"/>
 
     <Button
-        android:id="@+id/buttonPlay3"
+        android:id="@+id/skipBack"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_margin="10dip"
@@ -29,7 +30,7 @@
         android:background="@color/colorAccent"
         android:drawableStart="@android:drawable/ic_media_previous"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/buttonPlay4"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPlay"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonSongs"
@@ -37,7 +38,7 @@
         tools:ignore="MissingConstraints" />
 
     <Button
-        android:id="@+id/buttonPlay4"
+        android:id="@+id/buttonPlay"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_margin="10dip"
@@ -45,12 +46,12 @@
         android:background="@color/colorAccent"
         android:defaultFocusHighlightEnabled="false"
         android:drawableStart="@android:drawable/ic_media_play"
-        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay3"
-        app:layout_constraintEnd_toStartOf="@+id/buttonPlay2"
+        app:layout_constraintBaseline_toBaselineOf="@+id/skipBack"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPause"
         tools:ignore="MissingConstraints"/>
 
     <Button
-        android:id="@+id/buttonPlay2"
+        android:id="@+id/buttonPause"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_margin="10dip"
@@ -58,8 +59,8 @@
         android:background="@color/colorAccent"
         android:defaultFocusHighlightEnabled="false"
         android:drawableStart="@android:drawable/ic_media_pause"
-        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay4"
-        app:layout_constraintEnd_toStartOf="@+id/buttonPlay"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay"
+        app:layout_constraintEnd_toStartOf="@+id/skipForward"
         tools:ignore="MissingConstraints"/>
 
     <Button

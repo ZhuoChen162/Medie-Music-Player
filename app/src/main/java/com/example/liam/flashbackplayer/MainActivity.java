@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.view.View;
@@ -26,55 +27,98 @@ import java.util.HashMap;
 
 
 public class MainActivity extends AppCompatActivity {
-    private static HashMap<String, Album> albumMap;
-    private static MediaMetadataRetriever mmr;
+    private static final int MODE_SONG = 0;
+    private static final int MODE_ALBUM = 1;
+    private static final int MODE_FLASHBACK = 2;
+    private HashMap<String, Album> albumMap;
+    private MediaMetadataRetriever mmr;
+    private ArrayList<Song> masterList;
+    private MediaPlayer mediaPlayer;
+    private int currSong;
+    private int currMode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPermsExplicit();
+        currSong = 0;
+        //TODO: save this state and retrieve it on init. For now, default to song mode.
+        currMode = MODE_SONG;
 
-
-//        MediaPlayer mediaPlayer;
-//        int MEDIA_RES_ID = R.raw.jazz_in_paris;
-//
-//        public void loadMedia (int resourceID){
-//            if (mediaPlayer == null){
-//                mediaPlayer = new MediaPlayer();
-//            }
-//
-//            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//                @Override
-//                public void onCompletion(MediaPlayer mediaPlayer) {
-//                    mediaPlayer.start();
-//                }
-//            });
-//
-//            AssetFileDescriptor assetFileDescriptor = this.getResources().openRawResourceFd(resourceID);
-//            try{
-//                mediaPlayer.setDataSource(assetFileDescriptor);
-//                mediaPlayer.prepareAsync();
-//            }catch (Exception e){
-//                System.out.println(e.toString());
-//            }
-//        }
-
-
-        // play the current song
-        /*Button play = (Button) findViewById(R.id.buttonPlay);
-        play.setOnClickListener(new View.OnClickListener() {
-
+        Button skipBack = (Button) findViewById(R.id.skipBack);
+        skipBack.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View view) {
-
-//                if (play.isPlaying()) {
-//                    mediaPlayer.pause();
-//                } else {
-//                    mediaPlayer.start();
-//                }
+                currSong--;
+                if(currSong < 0) {
+                    mediaPlayer.reset();
+                } else {
+                    switch(currMode) {
+                        case(MODE_SONG):
+                            playSong(masterList.get(currSong));
+                            break;
+                        case(MODE_ALBUM):
+                            //playSong(albumTrackList.get(currSong));
+                            break;
+                        case(MODE_FLASHBACK):
+                            //get new flashback song
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
+        });
+        Button skipForward = (Button) findViewById(R.id.skipForward);
+        skipForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                currSong++;
+                switch(currMode) {
+                    case(MODE_SONG):
+                        if(currSong >= masterList.size()) {
+                            mediaPlayer.reset();
+                        } else {
+                            playSong(masterList.get(currSong));
+                        }
+                        break;
+                    case(MODE_ALBUM):
+                        /*
+                        if(currSong >= albumTrackList.size()) {
+                            mediaPlayer.reset();
+                        } else {
+                            playSong(albumTrackList.get(currSong));
+                        }*/
+                        break;
+                    case(MODE_FLASHBACK):
+                        //get new flashback song
+                        break;
+                    default:
+                        break;
+                    }
+                }
         });
 
 
+        // play the current song
+        Button play = (Button) findViewById(R.id.buttonPlay);
+        play.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (!mediaPlayer.isPlaying()) {
+                    mediaPlayer.start();
+                }
+            }
+        });
+
+        Button pause = (Button) findViewById(R.id.buttonPause);
+        pause.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                }
+            }
+        });
+/*
         // listener for button playing by songs in alphabetic order
         Button playSongs = (Button) findViewById(R.id.buttonSongs);
         playSongs.setOnClickListener(new View.OnClickListener() {
@@ -202,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 toAdd.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
                 albumMap.put(albumName, toAdd);
             }
+            fis.close();
         } catch (Exception e) {
             Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
         }
@@ -221,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
 
         //update UI in "song" mode
         ListView listView = (ListView) findViewById(R.id.songDisplay);
-        final ArrayList<Song> masterList = new ArrayList<Song>();
+        masterList = new ArrayList<Song>();
         for(Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
         }
@@ -240,6 +285,29 @@ public class MainActivity extends AppCompatActivity {
         };
         listView.setAdapter(adapter);
         listView.setSelection(0);
-
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Song clicked = masterList.get(i);
+                currSong = i;
+                playSong(clicked);
+            }
+        });
     }
+
+    public void playSong(Song toPlay) {
+        if(mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+        }
+
+        try {
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(toPlay.getFileName());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch(Exception e) {
+            Log.e("LOAD MEDIA", e.getMessage());
+        }
+    }
+
 }
