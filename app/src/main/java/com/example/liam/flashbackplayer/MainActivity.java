@@ -225,8 +225,8 @@ public class MainActivity extends AppCompatActivity {
         for(Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
         }
-        Object[] listViewArr = masterList.toArray();
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
+        //custom ArrayAdapter to display both the Song name and Album name on the main screen
+        ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
