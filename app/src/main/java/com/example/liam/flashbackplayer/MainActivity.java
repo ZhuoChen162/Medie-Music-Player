@@ -1,6 +1,7 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
@@ -19,10 +20,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 
@@ -34,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private MediaMetadataRetriever mmr;
     private ArrayList<Song> masterList;
     private MediaPlayer mediaPlayer;
+    private SharedPreferenceDriver prefs;
+    private File[] cacheCheck;
     private int currSong;
     private int currMode;
     @Override
@@ -41,9 +48,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPermsExplicit();
-        currSong = 0;
-        //TODO: save this state and retrieve it on init. For now, default to song mode.
-        currMode = MODE_SONG;
+
+
 
         Button skipBack = (Button) findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getPermsExplicit() {
-        //get explicit permission to read from external storage
+        //get explicit permission to read and write external storage
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
@@ -248,21 +254,39 @@ public class MainActivity extends AppCompatActivity {
             }
             fis.close();
         } catch (Exception e) {
-            Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
+            //Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
         }
     }
 
     public void initAndLoad() {
+        prefs = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
+        cacheCheck = prefs.getFileArr("cache check");
+        currSong = 0;
+        //TODO: save this state and retrieve it on init. For now, default to song mode.
+        currMode = MODE_SONG;
         albumMap = new HashMap<String, Album>();
         mmr = new MediaMetadataRetriever();
         File musicDir = readMusicFiles();
-        populateAlbumMap(musicDir);
-        for(Album toPrint : albumMap.values()) {
-            for(Song song : toPrint.getSongList()) {
-                String debug = "Album Name: " + toPrint.getName() + ", Song Name: " + song.getName();
-                Log.d("MUSIC LOADED", debug);
+        if(cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
+            Log.i("SAVE DIR", "EQUAL DIRECTORIES");
+            albumMap = prefs.getAlbumMap("album map");
+            if(albumMap == null) {
+                populateAlbumMap(musicDir);
+                prefs.saveObject(albumMap, "album map");
             }
+        } else {
+            Log.i("SAVE DIR", "UNEQUAL DIRECTORIES");
+            prefs.saveObject(musicDir.listFiles(), "cache check");
+            populateAlbumMap(musicDir);
+            prefs.saveObject(albumMap, "album map");
+            /*for(Album toPrint : albumMap.values()) {
+                for(Song song : toPrint.getSongList()) {
+                    String debug = "Album Name: " + toPrint.getName() + ", Song Name: " + song.getName();
+                    Log.d("MUSIC LOADED", debug);
+                }
+            }*/
         }
+
 
         //update UI in "song" mode
         ListView listView = (ListView) findViewById(R.id.songDisplay);
