@@ -2,9 +2,6 @@ package com.example.liam.flashbackplayer;
 
 import java.util.ArrayList;
 
-/**
- * Created by liam on 2/6/18.
- */
 
 public class Album {
     private String name;
