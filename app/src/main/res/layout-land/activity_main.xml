@@ -10,13 +10,11 @@
         android:id="@+id/buttonPlay"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="56dp"
+        android:layout_marginEnd="48dp"
         android:background="@color/colorAccent"
         android:drawableStart="@android:drawable/ic_media_next"
-        app:layout_constraintBottom_toBottomOf="@+id/buttonPlay2"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/buttonPlay2"
         tools:ignore="MissingConstraints" />
 
     <Button
