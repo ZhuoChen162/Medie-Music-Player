@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.media.MediaPlayer;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,38 +37,43 @@ public class MainActivity extends AppCompatActivity {
     private static final int MODE_SONG = 0;
     private static final int MODE_ALBUM = 1;
     private static final int MODE_FLASHBACK = 2;
+
     private HashMap<String, Album> albumMap;
     private MediaMetadataRetriever mmr;
     private ArrayList<Song> masterList;
     private MediaPlayer mediaPlayer;
+    private SeekBar progressSeekBar;
+    private SeekBar volumeControl;
     private SharedPreferenceDriver prefs;
     private File[] cacheCheck;
+
+    private final Handler seekBarHandler = new Handler();
+
     private int currSong;
     private int currMode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPermsExplicit();
 
-
-
         Button skipBack = (Button) findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currSong--;
-                if(currSong < 0) {
+                if (currSong < 0) {
                     mediaPlayer.reset();
                 } else {
-                    switch(currMode) {
-                        case(MODE_SONG):
+                    switch (currMode) {
+                        case (MODE_SONG):
                             playSong(masterList.get(currSong));
                             break;
-                        case(MODE_ALBUM):
+                        case (MODE_ALBUM):
                             //playSong(albumTrackList.get(currSong));
                             break;
-                        case(MODE_FLASHBACK):
+                        case (MODE_FLASHBACK):
                             //get new flashback song
                             break;
                         default:
@@ -80,15 +87,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 currSong++;
-                switch(currMode) {
-                    case(MODE_SONG):
-                        if(currSong >= masterList.size()) {
+                switch (currMode) {
+                    case (MODE_SONG):
+                        if (currSong >= masterList.size()) {
                             mediaPlayer.reset();
                         } else {
                             playSong(masterList.get(currSong));
                         }
                         break;
-                    case(MODE_ALBUM):
+                    case (MODE_ALBUM):
                         /*
                         if(currSong >= albumTrackList.size()) {
                             mediaPlayer.reset();
@@ -96,13 +103,13 @@ public class MainActivity extends AppCompatActivity {
                             playSong(albumTrackList.get(currSong));
                         }*/
                         break;
-                    case(MODE_FLASHBACK):
+                    case (MODE_FLASHBACK):
                         //get new flashback song
                         break;
                     default:
                         break;
-                    }
                 }
+            }
         });
 
 
@@ -124,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        progressBarInit();
+        volumeBarInit();
 /*
         // listener for button playing by songs in alphabetic order
         Button playSongs = (Button) findViewById(R.id.buttonSongs);
@@ -154,15 +164,65 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
 */
+    }
+
+    private void progressBarInit() {
+        progressSeekBar = findViewById(R.id.player_seekbar);
+        progressSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seek, int i, boolean b) {
+                if (b && mediaPlayer != null) {
+                    mediaPlayer.seekTo(i);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        final Runnable seekBarUpdate = new Runnable() {
+            public void run() {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    progressSeekBar.setProgress(mediaPlayer.getCurrentPosition());
+                }
+                seekBarHandler.postDelayed(this, 1000);
+            }
+        };
+        seekBarHandler.postDelayed(seekBarUpdate, 1000);
+    }
+
+    private void volumeBarInit() {
+        volumeControl = findViewById(R.id.player_volume);
+        volumeControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (b && mediaPlayer != null) {
+                    mediaPlayer.setVolume(i / 100f, i / 100f);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        for(int res : grantResults) {
-            if(res != PackageManager.PERMISSION_GRANTED) {
+        for (int res : grantResults) {
+            if (res != PackageManager.PERMISSION_GRANTED) {
                 System.exit(0);
             }
         }
@@ -191,13 +251,13 @@ public class MainActivity extends AppCompatActivity {
             File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
             Log.d("readMusicFiles", musicDir.getName());
             String[] children = musicDir.list();
-            if(children != null) {
-                for(String str : children) {
+            if (children != null) {
+                for (String str : children) {
                     Log.d("readMusicFiles", str);
                 }
             }
             return musicDir;
-        } catch(Exception e) {
+        } catch (Exception e) {
             Log.e("readMusicFiles", e.getMessage());
         }
         return null;
@@ -205,14 +265,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void populateAlbumMap(File rootDir) {
         //if a file in the Music directory is not another directory, it must be a song
-        if(!rootDir.isDirectory()) {
+        if (!rootDir.isDirectory()) {
             populateAlbumWithSong(rootDir);
             return;
         }
         //if it is a directory, recurse until we find songs.
         File[] dirContents = rootDir.listFiles();
-        if(dirContents != null) {
-            for(File inRoot : dirContents) {
+        if (dirContents != null) {
+            for (File inRoot : dirContents) {
                 populateAlbumMap(inRoot);
             }
         }
@@ -229,21 +289,21 @@ public class MainActivity extends AppCompatActivity {
             String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
             int trueLength = 0;
-            if(albumName == null) {
+            if (albumName == null) {
                 albumName = "Unknown Album";
             }
-            if(songName == null) {
+            if (songName == null) {
                 songName = song.getName();
             }
-            if(artist == null) {
+            if (artist == null) {
                 artist = "Unknown Artist";
             }
-            if(length != null) {
+            if (length != null) {
                 trueLength = Integer.parseInt(length);
             }
 
             //update album in map if it already exists, otherwise create the album
-            if(albumMap.containsKey(albumName)) {
+            if (albumMap.containsKey(albumName)) {
                 Album toEdit = albumMap.get(albumName);
                 toEdit.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
                 albumMap.put(albumName, toEdit);
@@ -267,10 +327,10 @@ public class MainActivity extends AppCompatActivity {
         albumMap = new HashMap<String, Album>();
         mmr = new MediaMetadataRetriever();
         File musicDir = readMusicFiles();
-        if(cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
+        if (cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
             Log.i("SAVE DIR", "EQUAL DIRECTORIES");
             albumMap = prefs.getAlbumMap("album map");
-            if(albumMap == null) {
+            if (albumMap == null) {
                 populateAlbumMap(musicDir);
                 prefs.saveObject(albumMap, "album map");
             }
@@ -291,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
         //update UI in "song" mode
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         masterList = new ArrayList<Song>();
-        for(Album toAdd : albumMap.values()) {
+        for (Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
         }
         //custom ArrayAdapter to display both the Song name and Album name on the main screen
@@ -320,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playSong(Song toPlay) {
-        if(mediaPlayer == null) {
+        if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
         }
 
@@ -329,7 +389,8 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
-        } catch(Exception e) {
+            progressSeekBar.setMax(mediaPlayer.getDuration());
+        } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
     }
