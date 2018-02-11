@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferenceDriver prefs;
     private File[] cacheCheck;
     private boolean isAlbumExpanded;
+    private boolean isActive;
 
     private final Handler seekBarHandler = new Handler();
 
@@ -182,15 +183,22 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         prefs.saveObject(albumMap, "albumMap");
         prefs.saveInt(displayMode, "mode");
+        isActive = false;
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        isActive = true;
+    }
+
+    /*@Override
     protected void onDestroy() {
         super.onDestroy();
         if(mediaPlayer != null) {
             mediaPlayer.release();
         }
-    }
+    }*/
 
     //use back button to navigate only while in album mode, otherwise default
     @Override
@@ -224,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Runnable seekBarUpdate = new Runnable() {
             public void run() {
-                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                if (isActive && mediaPlayer != null && mediaPlayer.isPlaying()) {
                     progressSeekBar.setProgress(mediaPlayer.getCurrentPosition());
                 }
                 seekBarHandler.postDelayed(this, 1000);
@@ -268,8 +276,10 @@ public class MainActivity extends AppCompatActivity {
     private void getPermsExplicit() {
         //get explicit permission to read and write external storage
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION}, 100);
         } else {
             initAndLoad();
         }
@@ -285,13 +295,6 @@ public class MainActivity extends AppCompatActivity {
         //open default Android music directory
         try {
             File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-            Log.d("readMusicFiles", musicDir.getName());
-            String[] children = musicDir.list();
-            if (children != null) {
-                for (String str : children) {
-                    Log.d("readMusicFiles", str);
-                }
-            }
             return musicDir;
         } catch (Exception e) {
             Log.e("readMusicFiles", e.getMessage());
@@ -392,6 +395,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateUI(final int mode) {
+        isAlbumExpanded = false;
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         switch(mode) {
             case(MODE_SONG):
@@ -452,6 +456,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void expandAlbum(View view, Album toExpand) {
+        boolean play = true;
+        if(perAlbumList != null && currSong < perAlbumList.size() && playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName())) {
+            play = false;
+        }
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         isAlbumExpanded = true;
         perAlbumList = toExpand.getSongList();
@@ -475,7 +483,7 @@ public class MainActivity extends AppCompatActivity {
                 //do nothing when clicked; user should not be able to manually choose song in album mode
             }
         });
-        if(!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
+        if(play) {
             playMode = displayMode;
             playSong(perAlbumList.get(0));
         }
