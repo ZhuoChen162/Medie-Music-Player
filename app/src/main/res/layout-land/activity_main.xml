@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.liam.flashbackplayer.MainActivity">
+
+    <Button
+        android:id="@+id/buttonPlay"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="48dp"
+        android:background="@color/colorAccent"
+        android:drawableStart="@android:drawable/ic_media_next"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay2"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/buttonPlay3"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dip"
+        android:layout_marginBottom="52dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/colorAccent"
+        android:drawableStart="@android:drawable/ic_media_previous"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPlay4"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSongs"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/buttonPlay4"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dip"
+        android:layout_marginEnd="8dp"
+        android:background="@color/colorAccent"
+        android:defaultFocusHighlightEnabled="false"
+        android:drawableStart="@android:drawable/ic_media_play"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay3"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPlay2"
+        tools:ignore="MissingConstraints"/>
+
+    <Button
+        android:id="@+id/buttonPlay2"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dip"
+        android:layout_marginEnd="8dp"
+        android:background="@color/colorAccent"
+        android:defaultFocusHighlightEnabled="false"
+        android:drawableStart="@android:drawable/ic_media_pause"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonPlay4"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPlay"
+        tools:ignore="MissingConstraints"/>
+
+    <Button
+        android:id="@+id/buttonSongs"
+        android:layout_width="98dp"
+        android:layout_height="51dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="28dp"
+        
+        android:text="Songs"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintEnd_toStartOf="@+id/buttonAlbum"
+        app:layout_constraintHorizontal_bias="0.347"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonAlbum"
+        android:layout_width="92dp"
+        android:layout_height="57dp"
+        android:layout_marginEnd="16dp"
+        android:text="Album"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonSongs"
+        app:layout_constraintEnd_toStartOf="@+id/buttonFlashBack" />
+
+    <Button
+        android:id="@+id/buttonFlashBack"
+        android:layout_width="111dp"
+        android:layout_height="54dp"
+        android:layout_marginEnd="16dp"
+        android:text="FlashBack"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonAlbum"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ListView
+        android:id="@+id/songDisplay"
+        android:layout_width="0dp"
+        android:layout_height="346dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+
+</android.support.constraint.ConstraintLayout>
