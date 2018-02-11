@@ -42,4 +42,14 @@ public class SharedPreferenceDriver {
         return gson.fromJson(json, alistType);
     }
 
+    public void saveInt(int toSave, String id) {
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putInt(id, toSave);
+        prefsEditor.apply();
+    }
+
+    public int getInt(String id) {
+        return prefs.getInt(id, MainActivity.MODE_SONG);
+    }
+
 }

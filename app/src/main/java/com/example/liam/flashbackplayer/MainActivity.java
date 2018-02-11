@@ -1,8 +1,8 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,69 +16,74 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.view.View;
 import android.media.MediaPlayer;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 
 public class MainActivity extends AppCompatActivity {
-    private static final int MODE_SONG = 0;
-    private static final int MODE_ALBUM = 1;
-    private static final int MODE_FLASHBACK = 2;
+    public static final int MODE_SONG = 0;
+    public static final int MODE_ALBUM = 1;
+    public static final int MODE_FLASHBACK = 2;
 
     private HashMap<String, Album> albumMap;
     private MediaMetadataRetriever mmr;
     private ArrayList<Song> masterList;
+    private ArrayList<Song> perAlbumList;
     private MediaPlayer mediaPlayer;
     private SeekBar progressSeekBar;
     private SeekBar volumeControl;
     private SharedPreferenceDriver prefs;
     private File[] cacheCheck;
+    private boolean isAlbumExpanded;
 
     private final Handler seekBarHandler = new Handler();
 
     private int currSong;
-    private int currMode;
+    private int playMode;
+    private int displayMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPermsExplicit();
-
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         Button skipBack = (Button) findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currSong--;
-                if (currSong < 0) {
-                    mediaPlayer.reset();
-                } else {
-                    switch (currMode) {
-                        case (MODE_SONG):
+                switch (playMode) {
+                    case (MODE_SONG):
+                        if(currSong < 0) {
+                            currSong = 0;
                             playSong(masterList.get(currSong));
-                            break;
-                        case (MODE_ALBUM):
-                            //playSong(albumTrackList.get(currSong));
-                            break;
-                        case (MODE_FLASHBACK):
-                            //get new flashback song
-                            break;
-                        default:
-                            break;
-                    }
+                            mediaPlayer.pause();
+                        } else {
+                            playSong(masterList.get(currSong));
+                        }
+                        break;
+                    case (MODE_ALBUM):
+                        if(currSong < 0) {
+                            currSong = 0;
+                            playSong(perAlbumList.get(currSong));
+                            mediaPlayer.pause();
+                        } else {
+                            playSong(perAlbumList.get(currSong));
+                        }
+                        break;
+                    case (MODE_FLASHBACK):
+                        //get new flashback song
+                        break;
+                    default:
+                        break;
                 }
             }
         });
@@ -87,21 +92,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 currSong++;
-                switch (currMode) {
+                switch (playMode) {
                     case (MODE_SONG):
                         if (currSong >= masterList.size()) {
-                            mediaPlayer.reset();
+                            currSong = masterList.size()-1;
+                            playSong(masterList.get(currSong));
+                            mediaPlayer.pause();
                         } else {
                             playSong(masterList.get(currSong));
                         }
                         break;
                     case (MODE_ALBUM):
-                        /*
-                        if(currSong >= albumTrackList.size()) {
-                            mediaPlayer.reset();
+                        if(currSong >= perAlbumList.size()) {
+                            currSong = perAlbumList.size()-1;
+                            playSong(perAlbumList.get(currSong));
+                            mediaPlayer.pause();
                         } else {
-                            playSong(albumTrackList.get(currSong));
-                        }*/
+                            playSong(perAlbumList.get(currSong));
+                        }
                         break;
                     case (MODE_FLASHBACK):
                         //get new flashback song
@@ -134,14 +142,14 @@ public class MainActivity extends AppCompatActivity {
 
         progressBarInit();
         volumeBarInit();
-/*
+
         // listener for button playing by songs in alphabetic order
         Button playSongs = (Button) findViewById(R.id.buttonSongs);
         playSongs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
+                displayMode = MODE_SONG;
+                populateUI(displayMode);
             }
         });
 
@@ -150,11 +158,12 @@ public class MainActivity extends AppCompatActivity {
         playAlbums.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
+                displayMode = MODE_ALBUM;
+                populateUI(displayMode);
             }
         });
 
+        /*
         // listener for button playing by flashback
         Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
@@ -165,6 +174,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 */
+    }
+
+    //this method is called when the activity is on its way to destruction. Use it to save data.
+    @Override
+    protected void onPause() {
+        super.onPause();
+        prefs.saveObject(albumMap, "albumMap");
+        prefs.saveInt(displayMode, "mode");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mediaPlayer != null) {
+            mediaPlayer.release();
+        }
+    }
+
+    //use back button to navigate only while in album mode, otherwise default
+    @Override
+    public void onBackPressed() {
+        if(isAlbumExpanded) {
+            isAlbumExpanded = false;
+            populateUI(displayMode);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     private void progressBarInit() {
@@ -318,16 +354,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void initAndLoad() {
+    private void initAndLoad() {
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+        }
         prefs = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
-        cacheCheck = prefs.getFileArr("cache check");
+        //cacheCheck = prefs.getFileArr("cache check");
         currSong = 0;
-        //TODO: save this state and retrieve it on init. For now, default to song mode.
-        currMode = MODE_SONG;
+        //defaults to song mode
+        displayMode = prefs.getInt("mode");
+        isAlbumExpanded = false;
         albumMap = new HashMap<String, Album>();
         mmr = new MediaMetadataRetriever();
         File musicDir = readMusicFiles();
-        if (cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
+        /*if (cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
             Log.i("SAVE DIR", "EQUAL DIRECTORIES");
             albumMap = prefs.getAlbumMap("album map");
             if (albumMap == null) {
@@ -344,26 +384,86 @@ public class MainActivity extends AppCompatActivity {
                     String debug = "Album Name: " + toPrint.getName() + ", Song Name: " + song.getName();
                     Log.d("MUSIC LOADED", debug);
                 }
-            }*/
-        }
+            }
+        }*/
+        populateAlbumMap(musicDir);
+        populateUI(displayMode);
 
+    }
 
-        //update UI in "song" mode
+    private void populateUI(final int mode) {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
-        masterList = new ArrayList<Song>();
-        for (Album toAdd : albumMap.values()) {
-            masterList.addAll(toAdd.getSongList());
+        switch(mode) {
+            case(MODE_SONG):
+                masterList = new ArrayList<Song>();
+                for (Album toAdd : albumMap.values()) {
+                    masterList.addAll(toAdd.getSongList());
+                }
+                //custom ArrayAdapter to display both the Song name and Album name on the main screen
+                ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        View view = super.getView(position, convertView, parent);
+                        TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                        TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                        text1.setText(masterList.get(position).getName());
+                        text2.setText(masterList.get(position).getAlbumName());
+                        return view;
+                    }
+                };
+                listView.setAdapter(adapter);
+                listView.setSelection(0);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        playMode = displayMode;
+                        Song clicked = masterList.get(i);
+                        currSong = i;
+                        playSong(clicked);
+                    }
+                });
+                break;
+            case(MODE_ALBUM):
+                final ArrayList<Album> albums = new ArrayList<Album>();
+                albums.addAll(albumMap.values());
+                ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        View view = super.getView(position, convertView, parent);
+                        TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                        TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                        text1.setText(albums.get(position).getName());
+                        text2.setText(albums.get(position).getSongList().size() + " tracks");
+                        return view;
+                    }
+                };
+                listView.setAdapter(adapter2);
+                listView.setSelection(0);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Album clicked = albums.get(i);
+                        expandAlbum(view, clicked);
+                    }
+                });
         }
-        //custom ArrayAdapter to display both the Song name and Album name on the main screen
-        ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
+    }
+
+    private void expandAlbum(View view, Album toExpand) {
+        ListView listView = (ListView) findViewById(R.id.songDisplay);
+        isAlbumExpanded = true;
+        perAlbumList = toExpand.getSongList();
+        ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, perAlbumList) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-                text1.setText(masterList.get(position).getName());
-                text2.setText(masterList.get(position).getAlbumName());
+                text1.setText(perAlbumList.get(position).getName());
+                text2.setText(perAlbumList.get(position).getAlbumName());
                 return view;
             }
         };
@@ -372,17 +472,30 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Song clicked = masterList.get(i);
-                currSong = i;
-                playSong(clicked);
+                //do nothing when clicked; user should not be able to manually choose song in album mode
             }
         });
+        if(!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
+            playMode = displayMode;
+            playSong(perAlbumList.get(0));
+        }
     }
 
-    public void playSong(Song toPlay) {
-        if (mediaPlayer == null) {
-            mediaPlayer = new MediaPlayer();
-        }
+    private void playSong(Song toPlay) {
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                if(playMode == MODE_ALBUM) {
+                    Log.i("SONG DONE", perAlbumList.get(currSong).getName());
+                    if(currSong >= perAlbumList.size()-1) {
+                        mediaPlayer.reset();
+                    } else {
+                        currSong++;
+                        playSong(perAlbumList.get(currSong));
+                    }
+                }
+            }
+        });
 
         try {
             mediaPlayer.reset();
