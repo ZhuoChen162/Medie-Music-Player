@@ -20,10 +20,14 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -317,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //load meta Data from songs
     private void populateAlbumWithSong(File song) {
         try {
             FileInputStream fis = new FileInputStream(song);
@@ -327,7 +332,9 @@ public class MainActivity extends AppCompatActivity {
             String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
             String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+
             int trueLength = 0;
+
             if (albumName == null) {
                 albumName = "Unknown Album";
             }
@@ -352,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
                 albumMap.put(albumName, toAdd);
             }
             fis.close();
+
         } catch (Exception e) {
             //Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
         }
@@ -489,8 +497,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //play songs
     private void playSong(Song toPlay) {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 if(playMode == MODE_ALBUM) {
@@ -510,10 +520,30 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
+            //display info
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), " Not known yet ");
+
             progressSeekBar.setMax(mediaPlayer.getDuration());
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
+    }
+
+    //function to display info of the song when a song starts playing
+    private void displayInfo(String name, String album, String loc){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String currTime = sdf.format(new Date());
+
+        TextView songName = (TextView) findViewById(R.id.SongName);
+        TextView AlbumName = (TextView) findViewById(R.id.AlbumName);
+        TextView currentTime = (TextView) findViewById(R.id.currentTime);
+        TextView currentLocation = (TextView) findViewById(R.id.currentLocation);
+
+       songName.setText(name);
+       AlbumName.setText(album);
+       currentTime.setText(currTime);
+       currentLocation.setText(loc);
     }
 
 }
