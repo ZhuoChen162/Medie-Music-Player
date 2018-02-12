@@ -20,10 +20,15 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferenceDriver prefs;
     private File[] cacheCheck;
     private boolean isAlbumExpanded;
+    private boolean isActive;
     private int curMusicDuration;
 
     private final Handler seekBarHandler = new Handler();
@@ -56,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        Button skipBack = (Button) findViewById(R.id.skipBack);
+        Button skipBack = (
+                Button) findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -181,17 +188,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
         prefs.saveObject(albumMap, "albumMap");
         prefs.saveInt(displayMode, "mode");
+        isActive = false;
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        isActive = true;
+    }
+
+    /*@Override
     protected void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
         }
-    }
+    }*/
 
     //use back button to navigate only while in album mode, otherwise default
     @Override
@@ -228,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Runnable seekBarUpdate = new Runnable() {
             public void run() {
-                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                if (isActive && mediaPlayer != null && mediaPlayer.isPlaying()) {
                     int curProgress = mediaPlayer.getCurrentPosition();
                     progressSeekBar.setProgress(curProgress);
                     progressTime.setText(milliSecToTime(curProgress, true));
@@ -296,8 +311,10 @@ public class MainActivity extends AppCompatActivity {
     private void getPermsExplicit() {
         //get explicit permission to read and write external storage
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION}, 100);
         } else {
             initAndLoad();
         }
@@ -313,13 +330,6 @@ public class MainActivity extends AppCompatActivity {
         //open default Android music directory
         try {
             File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-            Log.d("readMusicFiles", musicDir.getName());
-            String[] children = musicDir.list();
-            if (children != null) {
-                for (String str : children) {
-                    Log.d("readMusicFiles", str);
-                }
-            }
             return musicDir;
         } catch (Exception e) {
             Log.e("readMusicFiles", e.getMessage());
@@ -342,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //load meta Data from songs
     private void populateAlbumWithSong(File song) {
         try {
             FileInputStream fis = new FileInputStream(song);
@@ -352,7 +363,9 @@ public class MainActivity extends AppCompatActivity {
             String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
             String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+
             int trueLength = 0;
+
             if (albumName == null) {
                 albumName = "Unknown Album";
             }
@@ -377,6 +390,7 @@ public class MainActivity extends AppCompatActivity {
                 albumMap.put(albumName, toAdd);
             }
             fis.close();
+
         } catch (Exception e) {
             //Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
         }
@@ -420,6 +434,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateUI(final int mode) {
+        isAlbumExpanded = false;
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         switch (mode) {
             case (MODE_SONG):
@@ -427,6 +442,10 @@ public class MainActivity extends AppCompatActivity {
                 for (Album toAdd : albumMap.values()) {
                     masterList.addAll(toAdd.getSongList());
                 }
+
+                //Sort the song alphabetically
+                Collections.sort(masterList);
+
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
                 ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
                     @Override
@@ -440,6 +459,8 @@ public class MainActivity extends AppCompatActivity {
                         return view;
                     }
                 };
+
+
                 listView.setAdapter(adapter);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -455,6 +476,9 @@ public class MainActivity extends AppCompatActivity {
             case (MODE_ALBUM):
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(albumMap.values());
+                //sort the albums in order
+                Collections.sort(albums);
+
                 ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
@@ -480,6 +504,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void expandAlbum(View view, Album toExpand) {
+        boolean play = true;
+        if(perAlbumList != null && currSong < perAlbumList.size() && playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName())) {
+            play = false;
+        }
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         isAlbumExpanded = true;
         perAlbumList = toExpand.getSongList();
@@ -503,14 +531,18 @@ public class MainActivity extends AppCompatActivity {
                 //do nothing when clicked; user should not be able to manually choose song in album mode
             }
         });
+
+//        if(play) {
         if (!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
             playMode = displayMode;
             playSong(perAlbumList.get(0));
         }
     }
 
+    //play songs
     private void playSong(Song toPlay) {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 if (playMode == MODE_ALBUM) {
@@ -530,11 +562,35 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
+
+            // want to get current locaiton while starting playing the song
+            Location loc = new Location();
+            String location = loc.getlocation();
+            //display info
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), location );
+          
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
+    }
+
+    //function to display info of the song when a song starts playing
+    private void displayInfo(String name, String album, String loc){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String currTime = sdf.format(new Date());
+
+        TextView songName = (TextView) findViewById(R.id.SongName);
+        TextView AlbumName = (TextView) findViewById(R.id.AlbumName);
+        TextView currentTime = (TextView) findViewById(R.id.currentTime);
+        TextView currentLocation = (TextView) findViewById(R.id.currentLocation);
+
+       songName.setText(name);
+       AlbumName.setText(album);
+       currentTime.setText(currTime);
+       currentLocation.setText(loc);
     }
 
 }
