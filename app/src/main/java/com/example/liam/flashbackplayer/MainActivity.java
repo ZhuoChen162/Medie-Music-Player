@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferenceDriver prefs;
     private File[] cacheCheck;
     private boolean isAlbumExpanded;
+    private int curMusicDuration;
 
     private final Handler seekBarHandler = new Handler();
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 currSong--;
                 switch (playMode) {
                     case (MODE_SONG):
-                        if(currSong < 0) {
+                        if (currSong < 0) {
                             currSong = 0;
                             playSong(masterList.get(currSong));
                             mediaPlayer.pause();
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         break;
                     case (MODE_ALBUM):
-                        if(currSong < 0) {
+                        if (currSong < 0) {
                             currSong = 0;
                             playSong(perAlbumList.get(currSong));
                             mediaPlayer.pause();
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (playMode) {
                     case (MODE_SONG):
                         if (currSong >= masterList.size()) {
-                            currSong = masterList.size()-1;
+                            currSong = masterList.size() - 1;
                             playSong(masterList.get(currSong));
                             mediaPlayer.pause();
                         } else {
@@ -103,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                         break;
                     case (MODE_ALBUM):
-                        if(currSong >= perAlbumList.size()) {
-                            currSong = perAlbumList.size()-1;
+                        if (currSong >= perAlbumList.size()) {
+                            currSong = perAlbumList.size() - 1;
                             playSong(perAlbumList.get(currSong));
                             mediaPlayer.pause();
                         } else {
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mediaPlayer != null) {
+        if (mediaPlayer != null) {
             mediaPlayer.release();
         }
     }
@@ -195,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
     //use back button to navigate only while in album mode, otherwise default
     @Override
     public void onBackPressed() {
-        if(isAlbumExpanded) {
+        if (isAlbumExpanded) {
             isAlbumExpanded = false;
             populateUI(displayMode);
         } else {
@@ -222,15 +223,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final TextView progressTime = findViewById(R.id.cur_progress_time);
+        final TextView leftTime = findViewById(R.id.cur_left_time);
+
         final Runnable seekBarUpdate = new Runnable() {
             public void run() {
                 if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                    progressSeekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    int curProgress = mediaPlayer.getCurrentPosition();
+                    progressSeekBar.setProgress(curProgress);
+                    progressTime.setText(milliSecToTime(curProgress, true));
+                    leftTime.setText(milliSecToTime(curMusicDuration - curProgress, false));
                 }
                 seekBarHandler.postDelayed(this, 1000);
             }
         };
         seekBarHandler.postDelayed(seekBarUpdate, 1000);
+    }
+
+    private String milliSecToTime(int milliSec, boolean positive) {
+        String time = "";
+        String strSeconds = "";
+
+        int minutes = (milliSec % (1000 * 60 * 60)) / (1000 * 60);
+        int seconds = ((milliSec % (1000 * 60 * 60)) % (1000 * 60) / 1000);
+
+        if (seconds < 10) {
+            strSeconds = "0" + seconds;
+        } else {
+            strSeconds = "" + seconds;
+        }
+
+        time = minutes + ":" + strSeconds;
+        if (!positive) {
+            time = "-" + time;
+        }
+        return time;
     }
 
     private void volumeBarInit() {
@@ -254,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -393,8 +421,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void populateUI(final int mode) {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
-        switch(mode) {
-            case(MODE_SONG):
+        switch (mode) {
+            case (MODE_SONG):
                 masterList = new ArrayList<Song>();
                 for (Album toAdd : albumMap.values()) {
                     masterList.addAll(toAdd.getSongList());
@@ -424,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 break;
-            case(MODE_ALBUM):
+            case (MODE_ALBUM):
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(albumMap.values());
                 ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
@@ -475,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
                 //do nothing when clicked; user should not be able to manually choose song in album mode
             }
         });
-        if(!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
+        if (!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
             playMode = displayMode;
             playSong(perAlbumList.get(0));
         }
@@ -485,9 +513,9 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                if(playMode == MODE_ALBUM) {
+                if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
-                    if(currSong >= perAlbumList.size()-1) {
+                    if (currSong >= perAlbumList.size() - 1) {
                         mediaPlayer.reset();
                     } else {
                         currSong++;
@@ -502,7 +530,8 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
-            progressSeekBar.setMax(mediaPlayer.getDuration());
+            curMusicDuration = mediaPlayer.getDuration();
+            progressSeekBar.setMax(curMusicDuration);
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
