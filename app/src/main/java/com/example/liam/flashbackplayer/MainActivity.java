@@ -530,8 +530,14 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
+
+            // want to get current locaiton while starting playing the song
+            Location loc = new Location();
+            String location = loc.getlocation();
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), " Not known yet ");
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), location );
+
+
 
             progressSeekBar.setMax(mediaPlayer.getDuration());
         } catch (Exception e) {
