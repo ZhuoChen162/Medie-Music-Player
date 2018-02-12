@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -411,6 +412,10 @@ public class MainActivity extends AppCompatActivity {
                 for (Album toAdd : albumMap.values()) {
                     masterList.addAll(toAdd.getSongList());
                 }
+
+                //Sort the song alphabetically
+                Collections.sort(masterList);
+
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
                 ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
                     @Override
@@ -424,6 +429,8 @@ public class MainActivity extends AppCompatActivity {
                         return view;
                     }
                 };
+
+
                 listView.setAdapter(adapter);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -439,6 +446,9 @@ public class MainActivity extends AppCompatActivity {
             case(MODE_ALBUM):
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(albumMap.values());
+                //sort the albums in order
+                Collections.sort(albums);
+
                 ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
