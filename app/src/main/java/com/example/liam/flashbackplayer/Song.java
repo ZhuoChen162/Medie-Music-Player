@@ -4,9 +4,6 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
-/**
- * Created by liam on 2/6/18.
- */
 
 public class Song implements Comparable{
     private String name;
