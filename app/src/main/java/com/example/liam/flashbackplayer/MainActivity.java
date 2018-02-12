@@ -505,7 +505,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void expandAlbum(View view, Album toExpand) {
         boolean play = true;
-        if(perAlbumList != null && currSong < perAlbumList.size() && playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName())) {
+        if (perAlbumList != null && currSong < perAlbumList.size() && playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName())) {
             play = false;
         }
         ListView listView = (ListView) findViewById(R.id.songDisplay);
@@ -562,23 +562,21 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setDataSource(toPlay.getFileName());
             mediaPlayer.prepare();
             mediaPlayer.start();
-
-            // want to get current locaiton while starting playing the song
-            Location loc = new Location();
-            String location = loc.getlocation();
-            //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), location );
-          
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
+
+            // want to get current locaiton while starting playing the song
+//            Location loc = new Location();
+//            String location = loc.getlocation();
+            //display info
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), "");
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
     }
 
     //function to display info of the song when a song starts playing
-    private void displayInfo(String name, String album, String loc){
-
+    private void displayInfo(String name, String album, String loc) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String currTime = sdf.format(new Date());
 
@@ -587,10 +585,10 @@ public class MainActivity extends AppCompatActivity {
         TextView currentTime = (TextView) findViewById(R.id.currentTime);
         TextView currentLocation = (TextView) findViewById(R.id.currentLocation);
 
-       songName.setText(name);
-       AlbumName.setText(album);
-       currentTime.setText(currTime);
-       currentLocation.setText(loc);
+        songName.setText(name);
+        AlbumName.setText(album);
+        currentTime.setText(currTime);
+        currentLocation.setText(loc);
     }
 
 }
