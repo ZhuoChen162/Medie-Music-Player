@@ -1,11 +1,12 @@
 package com.example.liam.flashbackplayer;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
 
-public class Album implements Comparable{
+public class Album extends Activity implements Comparable{
     private String name;
     private ArrayList<Song> songList;
 

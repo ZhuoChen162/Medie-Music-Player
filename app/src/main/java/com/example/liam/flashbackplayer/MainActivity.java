@@ -60,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        Button skipBack = (Button) findViewById(R.id.skipBack);
+        Button skipBack = (
+                Button) findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -185,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
         prefs.saveObject(albumMap, "albumMap");
         prefs.saveInt(displayMode, "mode");
         isActive = false;
