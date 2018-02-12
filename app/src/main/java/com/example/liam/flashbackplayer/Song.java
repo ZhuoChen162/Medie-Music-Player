@@ -13,6 +13,7 @@ public class Song implements Comparable{
     private int length; //length in milliseconds
     private ArrayList<Integer> times;
     private ArrayList<String> locations;
+    private int preference;     // favorite is 2, unfavorte is 0, and neutural is 1s
 
     public Song(String name, String fileName, String artist, int length, String albumName) {
         this.name = name;
@@ -22,6 +23,7 @@ public class Song implements Comparable{
         this.albumName = albumName;
         this.times = new ArrayList<Integer>();
         this.locations = new ArrayList<String>();
+        this.preference = 1;
     }
 
     public void updateMetadata(String loc, int time) {
@@ -55,6 +57,10 @@ public class Song implements Comparable{
 
     public ArrayList<String> getLocations() {
         return locations;
+    }
+
+    public int getPreference(){
+        return preference;
     }
 
 
