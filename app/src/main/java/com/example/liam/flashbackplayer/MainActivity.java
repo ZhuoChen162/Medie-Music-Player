@@ -577,16 +577,14 @@ public class MainActivity extends AppCompatActivity {
             double longitude = gps.getLongitude();
             double latitude = gps.getLatitude();
 
-
-
             //convert to addres using geocoder provided by google API
             Geocoder geocoder = new Geocoder(this);
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             Address address = addresses.get(0);
-            String sAddress = address.getLocality() + " "+ address.getFeatureName();
+            String sAddressKey = address.getLocality() + address.getFeatureName();
 
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddress);
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
 
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
