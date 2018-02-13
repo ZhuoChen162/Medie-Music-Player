@@ -566,10 +566,12 @@ public class MainActivity extends AppCompatActivity {
             progressSeekBar.setMax(curMusicDuration);
 
             // want to get current locaiton while starting playing the song
-//            Location loc = new Location();
-//            String location = loc.getlocation();
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), "");
+            GPSTracker gps = new GPSTracker(this);
+            double latLoc = gps.getLatitude();
+            double longLoc = gps.getLongitude();
+
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), latLoc + " " + longLoc);
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
