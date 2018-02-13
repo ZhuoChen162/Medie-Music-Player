@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private int currSong;
     private int playMode;
     private int displayMode;
+    private int direction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,64 +72,14 @@ public class MainActivity extends AppCompatActivity {
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currSong--;
-                switch (playMode) {
-                    case (MODE_SONG):
-                        if (currSong < 0) {
-                            currSong = 0;
-                            playSong(masterList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(masterList.get(currSong));
-                        }
-                        break;
-                    case (MODE_ALBUM):
-                        if (currSong < 0) {
-                            currSong = 0;
-                            playSong(perAlbumList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(perAlbumList.get(currSong));
-                        }
-                        break;
-                    case (MODE_FLASHBACK):
-                        //get new flashback song
-                        break;
-                    default:
-                        break;
-                }
+                skipSong(-1);
             }
         });
         Button skipForward = (Button) findViewById(R.id.skipForward);
         skipForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currSong++;
-                switch (playMode) {
-                    case (MODE_SONG):
-                        if (currSong >= masterList.size()) {
-                            currSong = masterList.size() - 1;
-                            playSong(masterList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(masterList.get(currSong));
-                        }
-                        break;
-                    case (MODE_ALBUM):
-                        if (currSong >= perAlbumList.size()) {
-                            currSong = perAlbumList.size() - 1;
-                            playSong(perAlbumList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(perAlbumList.get(currSong));
-                        }
-                        break;
-                    case (MODE_FLASHBACK):
-                        //get new flashback song
-                        break;
-                    default:
-                        break;
-                }
+                skipSong(1);
             }
         });
 
@@ -444,24 +395,22 @@ public class MainActivity extends AppCompatActivity {
         if(play) {
             playMode = displayMode;
             currSong = 0;
-            playSong(perAlbumList.get(currSong));
+            if(perAlbumList.get(currSong).getPreference() == Song.DISLIKE) {
+                skipSong(1);
+            } else {
+                playSong(perAlbumList.get(currSong));
+            }
         }
     }
 
     //play songs
     private void playSong(Song toPlay) {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
-                    if (currSong >= perAlbumList.size() - 1) {
-                        mediaPlayer.reset();
-                    } else {
-                        currSong++;
-                        playSong(perAlbumList.get(currSong));
-                    }
+                    skipSong(1);
                 }
             }
         });
@@ -477,21 +426,61 @@ public class MainActivity extends AppCompatActivity {
 
             // want to get current locaiton while starting playing the song
             // Created by ZHAOKAI XU:
-            GPSTracker gps = new GPSTracker(this);
-            double longitude = gps.getLongitude();
-            double latitude = gps.getLatitude();
+        /*GPSTracker gps = new GPSTracker(this);
+        double longitude = gps.getLongitude();
+        double latitude = gps.getLatitude();
 
-            //convert to addres using geocoder provided by google API
-            Geocoder geocoder = new Geocoder(this);
-            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            Address address = addresses.get(0);
-            String sAddressKey = address.getLocality() + address.getFeatureName();
+        //convert to addres using geocoder provided by google API
+        Geocoder geocoder = new Geocoder(this);
+        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+        Address address = addresses.get(0);
+        String sAddressKey = address.getLocality() + address.getFeatureName();
 
-            //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
-
+        //display info
+        displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
+        */
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
+        }
+    }
+
+
+    //skip forward or backward. Direction = -1 for back, 1 for forward.
+    private void skipSong(int direction) {
+        this.direction = direction;
+        ArrayList<Song> songs = new ArrayList<Song>();
+        if(playMode == MODE_FLASHBACK) {
+            //songs = flashbackList;
+        } else if(playMode == MODE_ALBUM) {
+            songs = perAlbumList;
+        } else {
+            songs = masterList;
+        }
+        if(currSong == songs.size() -1 && direction == 1) {
+            //playSong(songs.get(currSong));
+            //mediaPlayer.pause();
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                Log.e("SKIP SONG", e.getMessage());
+            }
+        } else if(currSong == 0 && direction == -1) {
+            //playSong(songs.get(currSong));
+            //mediaPlayer.pause();
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                Log.e("SKIP SONG", e.getMessage());
+            }
+        } else {
+            currSong += direction;
+            if(songs.get(currSong).getPreference() == Song.DISLIKE) {
+                skipSong(direction);
+            } else {
+                playSong(songs.get(currSong));
+            }
         }
     }
 
