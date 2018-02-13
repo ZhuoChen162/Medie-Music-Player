@@ -44,14 +44,12 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_FLASHBACK = 2;
 
     private HashMap<String, Album> albumMap;
-    private MediaMetadataRetriever mmr;
     private ArrayList<Song> masterList;
     private ArrayList<Song> perAlbumList;
     private MediaPlayer mediaPlayer;
     private SeekBar progressSeekBar;
     private SeekBar volumeControl;
     private SharedPreferenceDriver prefs;
-    private File[] cacheCheck;
     private boolean isAlbumExpanded;
     private boolean isActive;
     private int curMusicDuration;
@@ -189,14 +187,16 @@ public class MainActivity extends AppCompatActivity {
         });
 */
     }
-
     //this method is called when the activity is on its way to destruction. Use it to save data.
     @Override
     protected void onPause() {
         super.onPause();
-
-        prefs.saveObject(albumMap, "albumMap");
-        prefs.saveInt(displayMode, "mode");
+        if(this.prefs != null) {
+            if(this.albumMap != null) {
+                prefs.saveObject(albumMap, "album map");
+            }
+            prefs.saveInt(displayMode, "mode");
+        }
         isActive = false;
     }
 
@@ -326,115 +326,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private File readMusicFiles() {
-        //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
-        String state = Environment.getExternalStorageState();
-        if (!(Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
-            Log.e("readMusicFiles", "Error: files cannot be read.");
-            System.exit(-1);
-        }
-        //open default Android music directory
-        try {
-            File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-            return musicDir;
-        } catch (Exception e) {
-            Log.e("readMusicFiles", e.getMessage());
-        }
-        return null;
-    }
-
-    private void populateAlbumMap(File rootDir) {
-        //if a file in the Music directory is not another directory, it must be a song
-        if (!rootDir.isDirectory()) {
-            populateAlbumWithSong(rootDir);
-            return;
-        }
-        //if it is a directory, recurse until we find songs.
-        File[] dirContents = rootDir.listFiles();
-        if (dirContents != null) {
-            for (File inRoot : dirContents) {
-                populateAlbumMap(inRoot);
-            }
-        }
-    }
-
-    //load meta Data from songs
-    private void populateAlbumWithSong(File song) {
-        try {
-            FileInputStream fis = new FileInputStream(song);
-            FileDescriptor fd = fis.getFD();
-            mmr.setDataSource(fd);
-            //check if proper song metadata exists
-            String songName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-
-            int trueLength = 0;
-
-            if (albumName == null) {
-                albumName = "Unknown Album";
-            }
-            if (songName == null) {
-                songName = song.getName();
-            }
-            if (artist == null) {
-                artist = "Unknown Artist";
-            }
-            if (length != null) {
-                trueLength = Integer.parseInt(length);
-            }
-
-            //update album in map if it already exists, otherwise create the album
-            if (albumMap.containsKey(albumName)) {
-                Album toEdit = albumMap.get(albumName);
-                toEdit.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
-                albumMap.put(albumName, toEdit);
-            } else {
-                Album toAdd = new Album(albumName);
-                toAdd.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
-                albumMap.put(albumName, toAdd);
-            }
-            fis.close();
-
-        } catch (Exception e) {
-            //Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
-        }
-    }
-
     private void initAndLoad() {
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
         }
         prefs = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
-        //cacheCheck = prefs.getFileArr("cache check");
         currSong = 0;
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
-        albumMap = new HashMap<String, Album>();
-        mmr = new MediaMetadataRetriever();
-        File musicDir = readMusicFiles();
-        /*if (cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
-            Log.i("SAVE DIR", "EQUAL DIRECTORIES");
-            albumMap = prefs.getAlbumMap("album map");
-            if (albumMap == null) {
-                populateAlbumMap(musicDir);
-                prefs.saveObject(albumMap, "album map");
-            }
-        } else {
-            Log.i("SAVE DIR", "UNEQUAL DIRECTORIES");
-            prefs.saveObject(musicDir.listFiles(), "cache check");
-            populateAlbumMap(musicDir);
-            prefs.saveObject(albumMap, "album map");
-            /*for(Album toPrint : albumMap.values()) {
-                for(Song song : toPrint.getSongList()) {
-                    String debug = "Album Name: " + toPrint.getName() + ", Song Name: " + song.getName();
-                    Log.d("MUSIC LOADED", debug);
-                }
-            }
-        }*/
-        populateAlbumMap(musicDir);
+        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
+        loader.init();
+        albumMap = loader.getAlbumMap();
         populateUI(displayMode);
 
     }
@@ -449,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
                     masterList.addAll(toAdd.getSongList());
                 }
 
-                //Sort the song alphabetically
+                //Sort the songs alphabetically
                 Collections.sort(masterList);
 
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
@@ -538,9 +441,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if (!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
+        if(play) {
             playMode = displayMode;
-            playSong(perAlbumList.get(0));
+            currSong = 0;
+            playSong(perAlbumList.get(currSong));
         }
     }
 
