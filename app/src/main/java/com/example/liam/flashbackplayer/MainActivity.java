@@ -1,7 +1,10 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
@@ -20,6 +23,7 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -30,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -532,7 +538,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        if(play) {
         if (!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
             playMode = displayMode;
             playSong(perAlbumList.get(0));
@@ -565,13 +570,23 @@ public class MainActivity extends AppCompatActivity {
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
 
-            //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), "no ");
 
             // want to get current locaiton while starting playing the song
-            Location loc = new Location(    );
-            loc.getlocation();
+            // Created by ZHAOKAI XU:
+            GPSTracker gps = new GPSTracker(this);
+            double longitude = gps.getLongitude();
+            double latitude = gps.getLatitude();
 
+
+
+            //convert to addres using geocoder provided by google API
+            Geocoder geocoder = new Geocoder(this);
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            Address address = addresses.get(0);
+            String sAddress = address.getLocality() + " "+ address.getFeatureName();
+
+            //display info
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddress);
 
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
@@ -589,9 +604,9 @@ public class MainActivity extends AppCompatActivity {
         TextView currentLocation = (TextView) findViewById(R.id.currentLocation);
 
         songName.setText(name);
-        AlbumName.setText(album);
-        currentTime.setText(currTime);
-        currentLocation.setText(loc);
+        AlbumName.setText("Album: "+album);
+        currentTime.setText("PlayTime: "+currTime);
+        currentLocation.setText("Location: "+loc);
     }
+};
 
-}
