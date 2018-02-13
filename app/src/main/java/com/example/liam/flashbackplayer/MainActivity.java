@@ -565,11 +565,14 @@ public class MainActivity extends AppCompatActivity {
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
 
-            // want to get current locaiton while starting playing the song
-//            Location loc = new Location();
-//            String location = loc.getlocation();
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), "");
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), "no ");
+
+            // want to get current locaiton while starting playing the song
+            Location loc = new Location(    );
+            loc.getlocation();
+
+
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
