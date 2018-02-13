@@ -1,19 +1,23 @@
 package com.example.liam.flashbackplayer;
 
+import android.location.Location;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
 
 public class Song implements Comparable{
+    public static final int DISLIKE = 0;
+    public static final int NEUTRAL = 1;
+    public static final int FAVORITE = 2;
     private String name;
     private String fileName;
     private String artist;
     private String albumName;
     private int length; //length in milliseconds
     private ArrayList<Integer> times;
-    private ArrayList<String> locations;
-    private int preference;     // favorite is 2, unfavorte is 0, and neutural is 1s
+    private ArrayList<Location> locations;
+    private int preference;
 
     public Song(String name, String fileName, String artist, int length, String albumName) {
         this.name = name;
@@ -22,11 +26,11 @@ public class Song implements Comparable{
         this.length = length;
         this.albumName = albumName;
         this.times = new ArrayList<Integer>();
-        this.locations = new ArrayList<String>();
-        this.preference = 1;
+        this.locations = new ArrayList<Location>();
+        this.preference = NEUTRAL;
     }
 
-    public void updateMetadata(String loc, int time) {
+    public void updateMetadata(Location loc, int time) {
         this.locations.add(loc);
         this.times.add(time);
     }
@@ -55,8 +59,12 @@ public class Song implements Comparable{
         return times;
     }
 
-    public ArrayList<String> getLocations() {
+    public ArrayList<Location> getLocations() {
         return locations;
+    }
+
+    public void setPreference(int pref) {
+        this.preference = pref;
     }
 
     public int getPreference(){
