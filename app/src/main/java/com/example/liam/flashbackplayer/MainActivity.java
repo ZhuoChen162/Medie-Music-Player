@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private int currSong;
     private int playMode;
     private int displayMode;
-    private int direction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,13 +156,13 @@ public class MainActivity extends AppCompatActivity {
         isActive = true;
     }
 
-    /*@Override
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
         }
-    }*/
+    }
 
     //use back button to navigate only while in album mode, otherwise default
     @Override
@@ -426,19 +425,19 @@ public class MainActivity extends AppCompatActivity {
 
             // want to get current locaiton while starting playing the song
             // Created by ZHAOKAI XU:
-        /*GPSTracker gps = new GPSTracker(this);
-        double longitude = gps.getLongitude();
-        double latitude = gps.getLatitude();
+            GPSTracker gps = new GPSTracker(this);
+            double longitude = gps.getLongitude();
+            double latitude = gps.getLatitude();
 
-        //convert to addres using geocoder provided by google API
-        Geocoder geocoder = new Geocoder(this);
-        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-        Address address = addresses.get(0);
-        String sAddressKey = address.getLocality() + address.getFeatureName();
+            //convert to addres using geocoder provided by google API
+            Geocoder geocoder = new Geocoder(this);
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            Address address = addresses.get(0);
+            String sAddressKey = address.getLocality() + address.getFeatureName();
 
-        //display info
-        displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
-        */
+            //display info
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
+
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
@@ -447,7 +446,6 @@ public class MainActivity extends AppCompatActivity {
 
     //skip forward or backward. Direction = -1 for back, 1 for forward.
     private void skipSong(int direction) {
-        this.direction = direction;
         ArrayList<Song> songs = new ArrayList<Song>();
         if(playMode == MODE_FLASHBACK) {
             //songs = flashbackList;
@@ -457,8 +455,6 @@ public class MainActivity extends AppCompatActivity {
             songs = masterList;
         }
         if(currSong == songs.size() -1 && direction == 1) {
-            //playSong(songs.get(currSong));
-            //mediaPlayer.pause();
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
@@ -466,8 +462,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("SKIP SONG", e.getMessage());
             }
         } else if(currSong == 0 && direction == -1) {
-            //playSong(songs.get(currSong));
-            //mediaPlayer.pause();
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
