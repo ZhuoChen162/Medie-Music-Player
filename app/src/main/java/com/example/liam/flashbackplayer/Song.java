@@ -7,18 +7,29 @@ import java.util.ArrayList;
 
 
 public class Song implements Comparable {
-    public static final int DISLIKE = 0;
-    public static final int NEUTRAL = 1;
-    public static final int FAVORITE = 2;
+
+    // initialize the preference to neutural
+    public static final int DISLIKE = -1;
+    public static final int NEUTRAL = 0;
+    public static final int FAVORITE = 1;
+
     private String name;
     private String fileName;
     private String artist;
     private String albumName;
     private int length; //length in milliseconds
-    private int[] times;
-    private int[] day;
-    private double lastPlayTime;
-    private ArrayList<Location> locations;
+
+    private int[] timePeriod; // period of a day, declared to be an array of size 3
+                         //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
+
+    private int[] day;  // day of a week, declared to be an array of size 7
+
+    private double lastPlayTime;    //last time to play the song
+                                    //for example: 41726.0 means Thrusday, 17:26
+                                    // so the larger nunmber is always the most current played song
+
+    private ArrayList<String> locations;    //stores a list of strings of locations
+
     private int preference;
 
 
@@ -28,15 +39,28 @@ public class Song implements Comparable {
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
-        this.times = new int[3];
+        this.timePeriod = new int[3];
         this.day = new int[7];
-        this.locations = new ArrayList<Location>();
+        this.locations = new ArrayList<String>();
         this.preference = NEUTRAL;
     }
 
-    public void updateMetadata(Location loc, int time) {
+    public void updateMetadata(String loc, int dayOfweek, int hour, double lastPlayTime) {
+
+        // set the day of week to be true
+        day[dayOfweek-1] = 1;
+
+        //set the period of a day
+        if ( 5 <=  hour && hour <11 )
+            timePeriod[0]++;
+        else if ( 11 <= hour && hour < 16)
+            timePeriod[1]++;
+        else
+            timePeriod[2]++;
+
+        this.lastPlayTime = lastPlayTime;
+
         this.locations.add(loc);
-//        this.times.add(time);
     }
 
     public String getName() {
@@ -59,11 +83,11 @@ public class Song implements Comparable {
         return albumName;
     }
 
-    public int[] getTimes() {
-        return times;
+    public int[] getTimePeriod() {
+        return timePeriod;
     }
 
-    public ArrayList<Location> getLocations() {
+    public ArrayList<String> getLocations() {
         return locations;
     }
 

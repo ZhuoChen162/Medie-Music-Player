@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.math.RoundingMode;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -59,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private int currSong;
     private int playMode;
     private int displayMode;
+    private int dayOfWeek, hour, mins;
+    private double lastPlayedTime;
+    private String addressKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -412,20 +416,17 @@ public class MainActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mediaPlayer) {
 
                 //only when the song is completed,
-                //if the not dislike, store locaiton and time when the song stats playing
-                if(toPlay.getPreference() != 0)
+                //if the not dislike, store locaiton, day of week, hour and last played time
+                if(toPlay.getPreference() != -1)
                 {
-
-                    //toPlay.updateMetadata( , sAddressKey );
+                    toPlay.updateMetadata( addressKey, dayOfWeek, hour, lastPlayedTime );
                 }
-
 
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
                     skipSong(1);
                 }
-
 
             }
         });
@@ -449,19 +450,26 @@ public class MainActivity extends AppCompatActivity {
             Geocoder geocoder = new Geocoder(this);
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             Address address = addresses.get(0);
-            final String sAddressKey = address.getLocality() + address.getFeatureName();
 
-            // get current time to display
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            //store the addressKey
+            addressKey = address.getLocality() + address.getFeatureName();
+
+            //get time info to store
+            dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            mins = Calendar.getInstance().get(Calendar.MINUTE);
+
+            //calculate lastPlayedTime in double format
+            lastPlayedTime = dayOfWeek*10000 + hour*100 + mins;
+
+            System.out.println(lastPlayedTime);
+
+            //get current time to display
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             String currTime = sdf.format(new Date());
 
-            // get time info to store
-            int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            int min = Calendar.getInstance().get(Calendar.MINUTE);
-
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey, currTime);
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), addressKey, currTime);
 
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
