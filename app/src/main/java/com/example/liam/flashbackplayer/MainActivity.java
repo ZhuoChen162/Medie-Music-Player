@@ -2,6 +2,7 @@ package com.example.liam.flashbackplayer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.AudioManager;
@@ -87,20 +88,17 @@ public class MainActivity extends AppCompatActivity {
 
 
         // play the current song
-        Button play = (Button) findViewById(R.id.buttonPlay);
-        play.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if (!mediaPlayer.isPlaying()) {
-                    mediaPlayer.start();
-                }
-            }
-        });
-
-        Button pause = (Button) findViewById(R.id.buttonPause);
-        pause.setOnClickListener(new View.OnClickListener() {
+        final Drawable playImg = getResources().getDrawable(R.drawable.ic_play);
+        final Drawable pauseImg = getResources().getDrawable(R.drawable.ic_pause);
+        final Button playOrPause = findViewById(R.id.buttonPlay);
+        playOrPause.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (mediaPlayer.isPlaying()) {
+                    playOrPause.setBackground(playImg);
                     mediaPlayer.pause();
+                } else {
+                    playOrPause.setBackground(pauseImg);
+                    mediaPlayer.start();
                 }
             }
         });
@@ -128,9 +126,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//------------for testing only------------------
-        flashbackList = new ArrayList<>();
-//-------------------------------
         // listener for button playing by flashback         ZHAOKAI XU
         Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
@@ -138,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (playMode != MODE_FLASHBACK) {
                     playMode = MODE_FLASHBACK;
+                    currSong = 0;
+                    flashbackList = new ArrayList<>();
 
                     //update curr loc and time to implement the ranking algorihtm
                     updateLocAndTime();
