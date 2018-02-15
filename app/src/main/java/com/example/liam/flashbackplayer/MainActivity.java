@@ -132,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (playMode != MODE_FLASHBACK) {
-                    playMode = MODE_FLASHBACK;
-                    currSong = 0;
                     flashbackList = new ArrayList<>();
 
                     //update curr loc and time to implement the ranking algorihtm
@@ -141,9 +139,13 @@ public class MainActivity extends AppCompatActivity {
                     PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
 
                     //add songs in pq into the flashbackList
-                    while (!pq.isEmpty())
+                    while (!pq.isEmpty()) {
                         flashbackList.add(pq.poll());
+                    }
 
+                    //update UI
+                    displayMode = MODE_FLASHBACK;
+                    populateUI(displayMode);
 //------------for testing only------------------
                     skipSong(1);
 //------------for testing only------------------
@@ -385,6 +387,12 @@ public class MainActivity extends AppCompatActivity {
                         expandAlbum(view, clicked);
                     }
                 });
+                break;
+            case (MODE_FLASHBACK):
+                currSong = 0;
+                playMode = displayMode;
+                playSong(flashbackList.get(currSong));
+                break;
         }
     }
 
@@ -444,13 +452,6 @@ public class MainActivity extends AppCompatActivity {
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
                     skipSong(1);
-
-                    //store info and display songs
-                    //update curr loc and time, for display and storage
-                    updateLocAndTime();
-                    //display info
-                    displayInfo(perAlbumList.get(currSong).getName(), perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
-
                 }
 
             }
@@ -468,6 +469,9 @@ public class MainActivity extends AppCompatActivity {
             updateLocAndTime();
             //display info
             displayInfo(toPlay.getName(), toPlay.getAlbumName(), addressKey, currTime);
+            Drawable pauseImg = getResources().getDrawable(R.drawable.ic_pause);
+            Button playPause = (Button) findViewById(R.id.buttonPlay);
+            playPause.setBackground(pauseImg);
 
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
@@ -478,6 +482,8 @@ public class MainActivity extends AppCompatActivity {
     //skip forward or backward. Direction = -1 for back, 1 for forward.
     private void skipSong(int direction) {
         ArrayList<Song> songs = new ArrayList<Song>();
+        Drawable playImg = getResources().getDrawable(R.drawable.ic_play);
+        Button playPause = (Button) findViewById(R.id.buttonPlay);
         if (playMode == MODE_FLASHBACK) {
             songs = flashbackList;
         } else if (playMode == MODE_ALBUM) {
@@ -489,6 +495,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
+                playPause.setBackground(playImg);
             } catch (Exception e) {
                 Log.e("SKIP SONG", e.getMessage());
             }
@@ -496,6 +503,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
+                playPause.setBackground(playImg);
             } catch (Exception e) {
                 Log.e("SKIP SONG", e.getMessage());
             }
