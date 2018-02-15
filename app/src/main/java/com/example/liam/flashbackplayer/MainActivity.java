@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private int currSong;
     private int playMode;
     private int displayMode;
-    private int dayOfWeek, hour, mins;
+    private int date, dayOfWeek, hour, mins;
     private double lastPlayedTime;
     private String addressKey;
 
@@ -456,11 +456,12 @@ public class MainActivity extends AppCompatActivity {
 
             //get time info to store
             dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            date = Calendar.getInstance().get(Calendar.DATE);
             hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
             mins = Calendar.getInstance().get(Calendar.MINUTE);
 
             //calculate lastPlayedTime in double format
-            lastPlayedTime = dayOfWeek*10000 + hour*100 + mins;
+            lastPlayedTime = date*10000 + hour*100 + mins;
 
             System.out.println(lastPlayedTime);
 
