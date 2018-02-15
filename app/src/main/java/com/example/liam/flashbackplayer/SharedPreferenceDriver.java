@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 public class SharedPreferenceDriver {
     private SharedPreferences prefs;
+
     public SharedPreferenceDriver(SharedPreferences prefs) {
         this.prefs = prefs;
     }
@@ -31,14 +32,16 @@ public class SharedPreferenceDriver {
     public File[] getFileArr(String id) {
         Gson gson = new Gson();
         String json = prefs.getString(id, "");
-        Type fileType = new TypeToken<File[]>(){}.getType();
+        Type fileType = new TypeToken<File[]>() {
+        }.getType();
         return gson.fromJson(json, fileType);
     }
 
     public HashMap<String, Album> getAlbumMap(String id) {
         Gson gson = new Gson();
         String json = prefs.getString(id, "");
-        Type alistType = new TypeToken<HashMap<String, Album>>(){}.getType();
+        Type alistType = new TypeToken<HashMap<String, Album>>() {
+        }.getType();
         return gson.fromJson(json, alistType);
     }
 
@@ -51,6 +54,15 @@ public class SharedPreferenceDriver {
     public int getInt(String id) {
         return prefs.getInt(id, MainActivity.MODE_SONG);
     }
+
+    public void saveVolume(int volume) {
+        saveInt(volume, "volume");
+    }
+
+    public int getVolume() {
+        return prefs.getInt("volume", -1);
+    }
+
 
     public void remove(String key) {
         SharedPreferences.Editor prefsEditor = prefs.edit();

@@ -252,7 +252,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void volumeBarInit() {
+        final SharedPreferenceDriver volumeMem = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
+        int lastVolume = volumeMem.getVolume();
+
         volumeControl = findViewById(R.id.player_volume);
+        if (lastVolume < 0) {
+            volumeControl.setProgress(50);
+        } else {
+            volumeControl.setProgress(lastVolume);
+        }
+
         volumeControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -268,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                volumeMem.saveVolume(seekBar.getProgress());
             }
         });
     }
@@ -432,8 +441,8 @@ public class MainActivity extends AppCompatActivity {
 
                 //only when the song is completed,
                 //store locaiton, day of week, hour and last played time        ZHAOKAI XU
-                SongLocation songLocation =  new SongLocation(longitude,latitude);
-                toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
+                SongLocation songLocation = new SongLocation(longitude, latitude);
+                toPlay.updateMetadata(songLocation, dayOfWeek, hour, lastPlayedTime);
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
