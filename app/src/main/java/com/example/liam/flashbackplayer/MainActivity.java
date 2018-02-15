@@ -44,14 +44,12 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_FLASHBACK = 2;
 
     private HashMap<String, Album> albumMap;
-    private MediaMetadataRetriever mmr;
     private ArrayList<Song> masterList;
     private ArrayList<Song> perAlbumList;
     private MediaPlayer mediaPlayer;
     private SeekBar progressSeekBar;
     private SeekBar volumeControl;
     private SharedPreferenceDriver prefs;
-    private File[] cacheCheck;
     private boolean isAlbumExpanded;
     private boolean isActive;
     private int curMusicDuration;
@@ -73,64 +71,14 @@ public class MainActivity extends AppCompatActivity {
         skipBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currSong--;
-                switch (playMode) {
-                    case (MODE_SONG):
-                        if (currSong < 0) {
-                            currSong = 0;
-                            playSong(masterList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(masterList.get(currSong));
-                        }
-                        break;
-                    case (MODE_ALBUM):
-                        if (currSong < 0) {
-                            currSong = 0;
-                            playSong(perAlbumList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(perAlbumList.get(currSong));
-                        }
-                        break;
-                    case (MODE_FLASHBACK):
-                        //get new flashback song
-                        break;
-                    default:
-                        break;
-                }
+                skipSong(-1);
             }
         });
         Button skipForward = (Button) findViewById(R.id.skipForward);
         skipForward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currSong++;
-                switch (playMode) {
-                    case (MODE_SONG):
-                        if (currSong >= masterList.size()) {
-                            currSong = masterList.size() - 1;
-                            playSong(masterList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(masterList.get(currSong));
-                        }
-                        break;
-                    case (MODE_ALBUM):
-                        if (currSong >= perAlbumList.size()) {
-                            currSong = perAlbumList.size() - 1;
-                            playSong(perAlbumList.get(currSong));
-                            mediaPlayer.pause();
-                        } else {
-                            playSong(perAlbumList.get(currSong));
-                        }
-                        break;
-                    case (MODE_FLASHBACK):
-                        //get new flashback song
-                        break;
-                    default:
-                        break;
-                }
+                skipSong(1);
             }
         });
 
@@ -189,14 +137,16 @@ public class MainActivity extends AppCompatActivity {
         });
 */
     }
-
     //this method is called when the activity is on its way to destruction. Use it to save data.
     @Override
     protected void onPause() {
         super.onPause();
-
-        prefs.saveObject(albumMap, "albumMap");
-        prefs.saveInt(displayMode, "mode");
+        if(this.prefs != null) {
+            if(this.albumMap != null) {
+                prefs.saveObject(albumMap, "album map");
+            }
+            prefs.saveInt(displayMode, "mode");
+        }
         isActive = false;
     }
 
@@ -206,13 +156,13 @@ public class MainActivity extends AppCompatActivity {
         isActive = true;
     }
 
-    /*@Override
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
         }
-    }*/
+    }
 
     //use back button to navigate only while in album mode, otherwise default
     @Override
@@ -326,115 +276,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private File readMusicFiles() {
-        //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
-        String state = Environment.getExternalStorageState();
-        if (!(Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
-            Log.e("readMusicFiles", "Error: files cannot be read.");
-            System.exit(-1);
-        }
-        //open default Android music directory
-        try {
-            File musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-            return musicDir;
-        } catch (Exception e) {
-            Log.e("readMusicFiles", e.getMessage());
-        }
-        return null;
-    }
-
-    private void populateAlbumMap(File rootDir) {
-        //if a file in the Music directory is not another directory, it must be a song
-        if (!rootDir.isDirectory()) {
-            populateAlbumWithSong(rootDir);
-            return;
-        }
-        //if it is a directory, recurse until we find songs.
-        File[] dirContents = rootDir.listFiles();
-        if (dirContents != null) {
-            for (File inRoot : dirContents) {
-                populateAlbumMap(inRoot);
-            }
-        }
-    }
-
-    //load meta Data from songs
-    private void populateAlbumWithSong(File song) {
-        try {
-            FileInputStream fis = new FileInputStream(song);
-            FileDescriptor fd = fis.getFD();
-            mmr.setDataSource(fd);
-            //check if proper song metadata exists
-            String songName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-
-            int trueLength = 0;
-
-            if (albumName == null) {
-                albumName = "Unknown Album";
-            }
-            if (songName == null) {
-                songName = song.getName();
-            }
-            if (artist == null) {
-                artist = "Unknown Artist";
-            }
-            if (length != null) {
-                trueLength = Integer.parseInt(length);
-            }
-
-            //update album in map if it already exists, otherwise create the album
-            if (albumMap.containsKey(albumName)) {
-                Album toEdit = albumMap.get(albumName);
-                toEdit.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
-                albumMap.put(albumName, toEdit);
-            } else {
-                Album toAdd = new Album(albumName);
-                toAdd.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
-                albumMap.put(albumName, toAdd);
-            }
-            fis.close();
-
-        } catch (Exception e) {
-            //Log.e("POPULATE ALBUM MAP", song.getPath() + "failed: " + e.getMessage());
-        }
-    }
-
     private void initAndLoad() {
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
         }
         prefs = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
-        //cacheCheck = prefs.getFileArr("cache check");
         currSong = 0;
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
-        albumMap = new HashMap<String, Album>();
-        mmr = new MediaMetadataRetriever();
-        File musicDir = readMusicFiles();
-        /*if (cacheCheck != null && Arrays.equals(cacheCheck, musicDir.listFiles())) {
-            Log.i("SAVE DIR", "EQUAL DIRECTORIES");
-            albumMap = prefs.getAlbumMap("album map");
-            if (albumMap == null) {
-                populateAlbumMap(musicDir);
-                prefs.saveObject(albumMap, "album map");
-            }
-        } else {
-            Log.i("SAVE DIR", "UNEQUAL DIRECTORIES");
-            prefs.saveObject(musicDir.listFiles(), "cache check");
-            populateAlbumMap(musicDir);
-            prefs.saveObject(albumMap, "album map");
-            /*for(Album toPrint : albumMap.values()) {
-                for(Song song : toPrint.getSongList()) {
-                    String debug = "Album Name: " + toPrint.getName() + ", Song Name: " + song.getName();
-                    Log.d("MUSIC LOADED", debug);
-                }
-            }
-        }*/
-        populateAlbumMap(musicDir);
+        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
+        loader.init();
+        albumMap = loader.getAlbumMap();
         populateUI(displayMode);
 
     }
@@ -449,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
                     masterList.addAll(toAdd.getSongList());
                 }
 
-                //Sort the song alphabetically
+                //Sort the songs alphabetically
                 Collections.sort(masterList);
 
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
@@ -538,9 +391,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if (!(playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName()) && mediaPlayer != null)) {
+        if(play) {
             playMode = displayMode;
-            playSong(perAlbumList.get(0));
+            currSong = 0;
+            if(perAlbumList.get(currSong).getPreference() == Song.DISLIKE) {
+                skipSong(1);
+            } else {
+                playSong(perAlbumList.get(currSong));
+            }
         }
     }
 
@@ -550,7 +408,6 @@ public class MainActivity extends AppCompatActivity {
     private void playSong(final Song toPlay) {
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
@@ -558,18 +415,15 @@ public class MainActivity extends AppCompatActivity {
                 //if the not dislike, store locaiton and time when the song stats playing
                 if(toPlay.getPreference() != 0)
                 {
-                    if
-                    toPlay.updateMetadata( , sAddressKey );
+
+                    //toPlay.updateMetadata( , sAddressKey );
                 }
+
+
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
-                    if (currSong >= perAlbumList.size() - 1) {
-                        mediaPlayer.reset();
-                    } else {
-                        currSong++;
-                        playSong(perAlbumList.get(currSong));
-                    }
+                    skipSong(1);
                 }
 
 
@@ -597,18 +451,60 @@ public class MainActivity extends AppCompatActivity {
             Address address = addresses.get(0);
             final String sAddressKey = address.getLocality() + address.getFeatureName();
 
+            // get current time to display
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            String currTime = sdf.format(new Date());
+
+            // get time info to store
+            int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            int min = Calendar.getInstance().get(Calendar.MINUTE);
+
             //display info
-            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
+            displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey, currTime);
 
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
     }
 
+
+    //skip forward or backward. Direction = -1 for back, 1 for forward.
+    private void skipSong(int direction) {
+        ArrayList<Song> songs = new ArrayList<Song>();
+        if(playMode == MODE_FLASHBACK) {
+            //songs = flashbackList;
+        } else if(playMode == MODE_ALBUM) {
+            songs = perAlbumList;
+        } else {
+            songs = masterList;
+        }
+        if(currSong == songs.size() -1 && direction == 1) {
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                Log.e("SKIP SONG", e.getMessage());
+            }
+        } else if(currSong == 0 && direction == -1) {
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                Log.e("SKIP SONG", e.getMessage());
+            }
+        } else {
+            currSong += direction;
+            if(songs.get(currSong).getPreference() == Song.DISLIKE) {
+                skipSong(direction);
+            } else {
+                playSong(songs.get(currSong));
+            }
+        }
+    }
+
     //function to display info of the song when a song starts playing
-    private void displayInfo(String name, String album, String loc) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        String currTime = sdf.format(new Date());
+    private void displayInfo(String name, String album, String loc, String currTime) {
 
         TextView songName = (TextView) findViewById(R.id.SongName);
         TextView AlbumName = (TextView) findViewById(R.id.AlbumName);
