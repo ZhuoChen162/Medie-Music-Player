@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private int date, dayOfWeek, hour, mins;
     private long lastPlayedTime;
     private String addressKey;
-    private  String currTime;
+    private String currTime;
     private double longitude, latitude;
 
     @Override
@@ -149,10 +149,16 @@ public class MainActivity extends AppCompatActivity {
                 //update curr loc and time to implement the ranking algorihtm
                 updateLocAndTime();
 
+                System.out.println("curr longitude is "+ longitude);
+                System.out.println("curr latitude is "+ latitude);
+                System.out.println("currTime is "+ currTime);
+
+
                 PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
 
                 //add songs in pq into the flashbackList
                 for(int i=0; i< pq.size(); i++){
+                    System.out.println(pq.peek().getName());
                     flashbackList.add(pq.peek());
                     pq.remove();
                 }
@@ -435,13 +441,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
-                //only when the song is completed, if the not dislike,
+                //only when the song is completed,
                 //store locaiton, day of week, hour and last played time        ZHAOKAI XU
-                if(toPlay.getPreference() != -1)
-                {
-                    SongLocation songLocation =  new SongLocation(longitude,latitude);
-                    toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
-                }
+                SongLocation songLocation =  new SongLocation(longitude,latitude);
+                toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
+
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
@@ -451,8 +455,7 @@ public class MainActivity extends AppCompatActivity {
                     //update curr loc and time, for display and storage
                     updateLocAndTime();
                     //display info
-                    displayInfo(perAlbumList.get(currSong).getName(),
-                            perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
+                    displayInfo(perAlbumList.get(currSong).getName(), perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
 
                 }
 
@@ -563,10 +566,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     //ranking algorithm of songs at current time     ZHAOKAI XU(JACKIE)
-    private PriorityQueue<Song> rankingAlgorithm( int dayOfweek, int hour, double longitude, double latitude){
+    private PriorityQueue<Song> rankingAlgorithm( int dayOfweek, int hour,double longitude,double latitude){
+
 
         //create a priority queue for ranking
         Comparator<Song> comparator = new SongsRnakingComparator();
+
         PriorityQueue<Song> priorityQueue =
                 new PriorityQueue<Song>(masterList.size(), comparator);
 
@@ -576,18 +581,20 @@ public class MainActivity extends AppCompatActivity {
         {
             Song theSong = masterList.get(counter);
 
-            //1 check if has prev locaiton by traversing the locaiton list in a song
-            for(int i=0; i< theSong.getLocations().size(); i++ )
-            {
-                double dist = Math.sqrt( Math.pow(longitude - theSong.getLocations().get(i).getLongtitude(),2) +
-                        Math.pow(latitude - theSong.getLocations().get(i).getLatitude(),2));
-                if(dist < 0.001)
-                {
-                    // increase the ranking and quit
-                    theSong.setRankingPlueOne();
-                    break;
-                }
-            }
+            System.out.println("now storing " +theSong.getName());
+
+//            //1 check if has prev locaiton by traversing the locaiton list in a song
+//            for(int i=0; i< theSong.getLocations().size(); i++ )
+//            {
+//                double dist = Math.sqrt( Math.pow(longitude - theSong.getLocations().get(i).getLongtitude(),2) +
+//                        Math.pow(latitude - theSong.getLocations().get(i).getLatitude(),2));
+//                if(dist < 0.001)
+//                {
+//                    // increase the ranking and quit
+//                    theSong.setRankingPlueOne();
+//                    break;
+//                }
+//            }
 
             //2 check if has same timePeriod
             if ( 5 <=  hour && hour <11 ){

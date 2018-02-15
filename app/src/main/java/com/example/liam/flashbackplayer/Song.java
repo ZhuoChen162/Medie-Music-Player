@@ -28,7 +28,7 @@ public class Song implements Comparable {
                                     //for example: 41726.0 means Thrusday, 17:26
                                     // so the larger nunmber is always the most current played song
 
-    private ArrayList<String> locations;    //stores a list of strings of locations
+    //private ArrayList<String> locations;    //stores a list of strings of locations
     private ArrayList<SongLocation>  GPSlocations;
 
     private int preference;
@@ -43,9 +43,18 @@ public class Song implements Comparable {
         this.length = length;
         this.albumName = albumName;
 
-        this.timePeriod = new int[3];
-        this.day = new int[7];
-        this.GPSlocations = new ArrayList<SongLocation>();
+        int[] timePeriod = new int[3];
+        for(int i=0; i< 3; i++)
+            timePeriod[i] = 0;
+
+        int[] day = new int[7];
+        for(int i=0; i< 7; i++)
+            day[i] = 0;
+
+
+        ArrayList<SongLocation> GPSlocations = new ArrayList<SongLocation>();
+        GPSlocations.add( new SongLocation(12222,3333));
+
         this.preference = NEUTRAL;
         this.currRanking = 0;
     }
