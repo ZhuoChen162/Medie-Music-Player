@@ -430,12 +430,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
-                //only when the song is completed, if the not dislike,
+                //only when the song is completed,
                 //store locaiton, day of week, hour and last played time        ZHAOKAI XU
-                if (toPlay.getPreference() != -1) {
-                    SongLocation songLocation = new SongLocation(longitude, latitude);
-                    toPlay.updateMetadata(songLocation, dayOfWeek, hour, lastPlayedTime);
-                }
+                SongLocation songLocation =  new SongLocation(longitude,latitude);
+                toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
@@ -445,8 +443,7 @@ public class MainActivity extends AppCompatActivity {
                     //update curr loc and time, for display and storage
                     updateLocAndTime();
                     //display info
-                    displayInfo(perAlbumList.get(currSong).getName(),
-                            perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
+                    displayInfo(perAlbumList.get(currSong).getName(), perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
 
                 }
 
