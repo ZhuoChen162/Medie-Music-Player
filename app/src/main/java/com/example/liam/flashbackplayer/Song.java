@@ -11,7 +11,7 @@ public class Song implements Comparable{
     private String artist;
     private String albumName;
     private int length; //length in milliseconds
-    private ArrayList<Integer> times;
+    private ArrayList<IntegerInteger> times;
     private ArrayList<String> locations;
     private int preference;     // favorite is 2, unfavorte is 0, and neutural is 1s
 

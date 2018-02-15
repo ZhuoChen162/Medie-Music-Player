@@ -544,12 +544,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     //play songs
-    private void playSong(Song toPlay) {
+    private void playSong(final Song toPlay) {
+
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
+
+                //only when the song is completed,
+                //if the not dislike, store locaiton and time when the song stats playing
+                if(toPlay.getPreference() != 0)
+                {
+                    if
+                    toPlay.updateMetadata( , sAddressKey );
+                }
+
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
                     if (currSong >= perAlbumList.size() - 1) {
@@ -559,6 +571,8 @@ public class MainActivity extends AppCompatActivity {
                         playSong(perAlbumList.get(currSong));
                     }
                 }
+
+
             }
         });
 
@@ -581,7 +595,7 @@ public class MainActivity extends AppCompatActivity {
             Geocoder geocoder = new Geocoder(this);
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             Address address = addresses.get(0);
-            String sAddressKey = address.getLocality() + address.getFeatureName();
+            final String sAddressKey = address.getLocality() + address.getFeatureName();
 
             //display info
             displayInfo(toPlay.getName(), toPlay.getAlbumName(), sAddressKey);
