@@ -1,9 +1,10 @@
 package com.example.liam.flashbackplayer;
 
-import android.location.Location;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Song implements Comparable {
@@ -20,21 +21,19 @@ public class Song implements Comparable {
     private int length; //length in milliseconds
 
     private int[] timePeriod; // period of a day, declared to be an array of size 3
-                         //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
+    //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
 
     private int[] day;  // day of a week, declared to be an array of size 7
 
     private long lastPlayTime;    //last time to play the song
-                                    //for example: 41726.0 means Thrusday, 17:26
-                                    // so the larger nunmber is always the most current played song
+    //for example: 41726.0 means Thrusday, 17:26
+    // so the larger nunmber is always the most current played song
 
-    private ArrayList<String> locations;    //stores a list of strings of locations
-    private ArrayList<SongLocation>  GPSlocations;
+    private ArrayList<SongLocation> locations;
 
     private int preference;
 
-    private int currRanking;
-
+    private int ranking;
 
     public Song(String name, String fileName, String artist, int length, String albumName) {
         this.name = name;
@@ -45,38 +44,42 @@ public class Song implements Comparable {
 
         this.timePeriod = new int[3];
         this.day = new int[7];
-        this.GPSlocations = new ArrayList<SongLocation>();
+        this.locations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
-        this.currRanking = 0;
+        this.ranking = 0;
     }
 
     public void updateMetadata(SongLocation loc, int dayOfweek, int hour, long lastPlayTime) {
-
         // set the day of week to be true
-        day[dayOfweek-1] = 1;
+        day[dayOfweek - 1] = 1;
 
         //set the period of a day
-        if ( 5 <=  hour && hour <11 )
+        if (5 <= hour && hour < 11)
             timePeriod[0]++;
-        else if ( 11 <= hour && hour < 16)
+        else if (11 <= hour && hour < 16)
             timePeriod[1]++;
         else
             timePeriod[2]++;
 
         this.lastPlayTime = lastPlayTime;
-
-        this.GPSlocations.add(loc);
+        this.locations.add(loc);
     }
 
     public void setPreference(int pref) {
         this.preference = pref;
     }
 
-    public void setRankingPlueOne(){ this.currRanking++; }
+    public void increaseRanking() {
+        this.ranking++;
+    }
 
-    public int getRanking() {return currRanking;}
+    public int getRanking() {
+        return ranking;
+    }
 
-    public String getName() {return name;}
+    public String getName() {
+        return name;
+    }
 
     public String getFileName() {
         return fileName;
@@ -95,22 +98,25 @@ public class Song implements Comparable {
     }
 
 
-    public int[] getDay(){ return day; }
+    public int[] getDay() {
+        return day;
+    }
 
     public int[] getTimePeriod() {
         return timePeriod;
     }
 
     public ArrayList<SongLocation> getLocations() {
-        return GPSlocations;
+        return locations;
     }
 
     public int getPreference() {
         return preference;
     }
 
-    public long getlastPlayTime() {return lastPlayTime;}
-
+    public long getLastPlayTime() {
+        return lastPlayTime;
+    }
 
     @Override
     public int compareTo(@NonNull Object o) {

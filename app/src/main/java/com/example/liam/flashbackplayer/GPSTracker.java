@@ -55,27 +55,27 @@ public class GPSTracker extends Service implements LocationListener {
                         ActivityCompat.requestPermissions(null,
                                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                 100);
-                        Log.d("test1","ins");
+                        Log.d("test1", "ins");
                         return null;
                     }
 
                     locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000, 3, this);
 
-                    if (locManager != null){
+                    if (locManager != null) {
                         location = locManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null){
+                        if (location != null) {
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
                         }
                     }
                 }
 
-                if (checkGPSEnabled){
-                    if (location == null){
+                if (checkGPSEnabled) {
+                    if (location == null) {
                         locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 3, this);
-                        if (locManager != null){
+                        if (locManager != null) {
                             location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null){
+                            if (location != null) {
                                 latitude = location.getLatitude();
                                 longitude = location.getLongitude();
                             }
@@ -85,14 +85,14 @@ public class GPSTracker extends Service implements LocationListener {
                     System.out.println("NO GPS");
                 }
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return location;
     }
 
     // could be used to do the setting alert in the future.
-    public void settingsAlert(){
+    public void settingsAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(GPSTracker.this);
 
         // Setting Dialog Title
@@ -103,7 +103,7 @@ public class GPSTracker extends Service implements LocationListener {
 
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
                 dialog.cancel();
@@ -113,16 +113,17 @@ public class GPSTracker extends Service implements LocationListener {
     }
 
     //this is the function to get the latitude when call it
-    public double getLatitude(){
-        if (location != null){
+    public double getLatitude() {
+        if (location != null) {
             latitude = location.getLatitude();
         }
 
         return latitude;
     }
+
     //this is the function to get the longitude when call it
-    public double getLongitude(){
-        if (location != null){
+    public double getLongitude() {
+        if (location != null) {
             longitude = location.getLongitude();
         }
 
@@ -132,7 +133,7 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         // TODO Auto-generated method stub
-        if (location != null){
+        if (location != null) {
             this.location = location;
         }
     }

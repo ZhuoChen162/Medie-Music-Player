@@ -1,13 +1,11 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
-import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -23,25 +21,16 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.math.RoundingMode;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.PriorityQueue;
-import java.util.Comparator;
-
-
 
 public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
@@ -71,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private int date, dayOfWeek, hour, mins;
     private long lastPlayedTime;
     private String addressKey;
-    private  String currTime;
+    private String currTime;
     private double longitude, latitude;
 
     @Override
@@ -139,34 +128,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+//------------for testing only------------------
+        flashbackList = new ArrayList<>();
+//-------------------------------
         // listener for button playing by flashback         ZHAOKAI XU
         Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (playMode != MODE_FLASHBACK) {
+                    playMode = MODE_FLASHBACK;
 
-                //update curr loc and time to implement the ranking algorihtm
-                updateLocAndTime();
+                    //update curr loc and time to implement the ranking algorihtm
+                    updateLocAndTime();
+                    PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
 
-                PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
+                    //add songs in pq into the flashbackList
+                    while (!pq.isEmpty())
+                        flashbackList.add(pq.poll());
 
-                //add songs in pq into the flashbackList
-                for(int i=0; i< pq.size(); i++){
-                    flashbackList.add(pq.peek());
-                    pq.remove();
+//------------for testing only------------------
+                    skipSong(1);
+//------------for testing only------------------
                 }
             }
         });
 
 
     }
+
     //this method is called when the activity is on its way to destruction. Use it to save data.
     @Override
     protected void onPause() {
         super.onPause();
-        if(this.prefs != null) {
-            if(this.albumMap != null) {
+        if (this.prefs != null) {
+            if (this.albumMap != null) {
                 prefs.saveObject(albumMap, "album map");
             }
             prefs.saveInt(displayMode, "mode");
@@ -343,7 +339,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
 
-
                 listView.setAdapter(adapter);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -357,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case (MODE_ALBUM):
+                playMode = displayMode;
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(albumMap.values());
                 //sort the albums in order
@@ -415,17 +411,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if(play) {
+        if (play) {
             playMode = displayMode;
             currSong = 0;
-            if(perAlbumList.get(currSong).getPreference() == Song.DISLIKE) {
+            if (perAlbumList.get(currSong).getPreference() == Song.DISLIKE) {
                 skipSong(1);
             } else {
                 playSong(perAlbumList.get(currSong));
             }
         }
     }
-
 
 
     //play songs
@@ -437,10 +432,9 @@ public class MainActivity extends AppCompatActivity {
 
                 //only when the song is completed, if the not dislike,
                 //store locaiton, day of week, hour and last played time        ZHAOKAI XU
-                if(toPlay.getPreference() != -1)
-                {
-                    SongLocation songLocation =  new SongLocation(longitude,latitude);
-                    toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
+                if (toPlay.getPreference() != -1) {
+                    SongLocation songLocation = new SongLocation(longitude, latitude);
+                    toPlay.updateMetadata(songLocation, dayOfWeek, hour, lastPlayedTime);
                 }
 
                 if (playMode == MODE_ALBUM) {
@@ -481,21 +475,21 @@ public class MainActivity extends AppCompatActivity {
     //skip forward or backward. Direction = -1 for back, 1 for forward.
     private void skipSong(int direction) {
         ArrayList<Song> songs = new ArrayList<Song>();
-        if(playMode == MODE_FLASHBACK) {
+        if (playMode == MODE_FLASHBACK) {
             songs = flashbackList;
-        } else if(playMode == MODE_ALBUM) {
+        } else if (playMode == MODE_ALBUM) {
             songs = perAlbumList;
         } else {
             songs = masterList;
         }
-        if(currSong == songs.size() -1 && direction == 1) {
+        if (currSong == songs.size() - 1 && direction == 1) {
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
             } catch (Exception e) {
                 Log.e("SKIP SONG", e.getMessage());
             }
-        } else if(currSong == 0 && direction == -1) {
+        } else if (currSong == 0 && direction == -1) {
             try {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
@@ -504,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             currSong += direction;
-            if(songs.get(currSong).getPreference() == Song.DISLIKE) {
+            if (songs.get(currSong).getPreference() == Song.DISLIKE) {
                 skipSong(direction);
             } else {
                 playSong(songs.get(currSong));
@@ -521,14 +515,13 @@ public class MainActivity extends AppCompatActivity {
         TextView currentLocation = (TextView) findViewById(R.id.currentLocation);
 
         songName.setText(name);
-        AlbumName.setText("Album: "+album);
-        currentTime.setText("PlayTime: "+currTime);
-        currentLocation.setText("Location: "+loc);
+        AlbumName.setText("Album: " + album);
+        currentTime.setText("PlayTime: " + currTime);
+        currentLocation.setText("Location: " + loc);
     }
 
-
     //getLocAndTime     ZHAOKAI XU(JACKIE)
-    private void updateLocAndTime(){
+    private void updateLocAndTime() {
         // want to get current locaiton while starting playing the song
         // Created by ZHAOKAI XU:
         GPSTracker gps = new GPSTracker(this);
@@ -537,13 +530,12 @@ public class MainActivity extends AppCompatActivity {
 
         //convert to addres using geocoder provided by google API
         Geocoder geocoder = new Geocoder(this);
-        try{
+        try {
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             Address address = addresses.get(0);
             //store the addressKey
             addressKey = address.getLocality() + address.getFeatureName();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
 
@@ -554,67 +546,62 @@ public class MainActivity extends AppCompatActivity {
         mins = Calendar.getInstance().get(Calendar.MINUTE);
 
         //calculate lastPlayedTime in double format
-        lastPlayedTime = date*10000 + hour*100 + mins;
+        lastPlayedTime = date * 10000 + hour * 100 + mins;
 
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        currTime= sdf.format(new Date());
+        currTime = sdf.format(new Date());
     }
 
 
     //ranking algorithm of songs at current time     ZHAOKAI XU(JACKIE)
-    private PriorityQueue<Song> rankingAlgorithm( int dayOfweek, int hour, double longitude, double latitude){
+    private PriorityQueue<Song> rankingAlgorithm(int dayOfweek, int hour, double longitude, double latitude) {
 
         //create a priority queue for ranking
-        Comparator<Song> comparator = new SongsRnakingComparator();
+        Comparator<Song> comparator = new SongsRankingComparator();
         PriorityQueue<Song> priorityQueue =
                 new PriorityQueue<Song>(masterList.size(), comparator);
 
         //traverse the entire songs array to
         //calculate the ranking of each song at this time;
-        for (int counter = 0; counter < masterList.size(); counter++)
-        {
+        for (int counter = 0; counter < masterList.size(); counter++) {
             Song theSong = masterList.get(counter);
 
             //1 check if has prev locaiton by traversing the locaiton list in a song
-            for(int i=0; i< theSong.getLocations().size(); i++ )
-            {
-                double dist = Math.sqrt( Math.pow(longitude - theSong.getLocations().get(i).getLongtitude(),2) +
-                        Math.pow(latitude - theSong.getLocations().get(i).getLatitude(),2));
-                if(dist < 0.001)
-                {
+            for (int i = 0; i < theSong.getLocations().size(); i++) {
+                double dist = Math.sqrt(Math.pow(longitude - theSong.getLocations().get(i).longitude, 2) +
+                        Math.pow(latitude - theSong.getLocations().get(i).latitude, 2));
+                if (dist < 0.001) {
                     // increase the ranking and quit
-                    theSong.setRankingPlueOne();
+                    theSong.increaseRanking();
                     break;
                 }
             }
 
             //2 check if has same timePeriod
-            if ( 5 <=  hour && hour <11 ){
-                if ( theSong.getTimePeriod()[0]>0)
+            if (5 <= hour && hour < 11) {
+                if (theSong.getTimePeriod()[0] > 0)
                     // increase the ranking
-                    theSong.setRankingPlueOne();
-            }
-            else if ( 11 <= hour && hour < 16){
-                if ( theSong.getTimePeriod()[1]>0)
+                    theSong.increaseRanking();
+            } else if (11 <= hour && hour < 16) {
+                if (theSong.getTimePeriod()[1] > 0)
                     // increase the ranking
-                    theSong.setRankingPlueOne();
-            }
-            else{
-                if ( theSong.getTimePeriod()[2]>0)
+                    theSong.increaseRanking();
+            } else {
+                if (theSong.getTimePeriod()[2] > 0)
                     // increase the ranking
-                    theSong.setRankingPlueOne();
+                    theSong.increaseRanking();
             }
 
             //3 check the day of week
-            if( theSong.getDay()[dayOfweek] == 1 )
+            if (theSong.getDay()[dayOfweek - 1] == 1)
                 // increase the ranking
-                theSong.setRankingPlueOne();
+                theSong.increaseRanking();
 
             //4 check if favorited
-            if( theSong.getPreference() ==  1)
+            if (theSong.getPreference() == 1)
                 // increase the ranking
-                theSong.setRankingPlueOne();
+                theSong.increaseRanking();
 
             //store the songs into PQ
             priorityQueue.add(theSong);
@@ -624,25 +611,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //override the PQ to rank based on songs ranking and lastPlaytime    ZHAOKAI XU(JACKIE)
-    public class SongsRnakingComparator implements Comparator<Song>
-    {
-        public int compare(Song song1, Song song2)
-        {
-            if (song1.getRanking() > song2.getRanking())
-            {
+    public class SongsRankingComparator implements Comparator<Song> {
+        @Override
+        public int compare(Song left, Song right) {
+            if (left.getRanking() > right.getRanking()) {
                 return -1;
-            }
-            else if (song1.getRanking() < song2.getRanking())
-            {
+            } else if (left.getRanking() < right.getRanking()) {
                 return 1;
-            }
-            else {
-                if (song1.getlastPlayTime() > song2.getlastPlayTime() )
+            } else {
+                if (left.getLastPlayTime() > right.getLastPlayTime())
                     return -1;
                 else
                     return 1;
             }
-            //            return 0;
         }
     }
 

@@ -9,14 +9,37 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class MusicLoader {
     private MediaMetadataRetriever mmr;
     private HashMap<String, Album> albumMap;
+
     public MusicLoader(MediaMetadataRetriever retriever, SharedPreferenceDriver prefs) {
         this.mmr = retriever;
+
         HashMap<String, Album> stored = prefs.getAlbumMap("album map");
+
+//------------for testing only------------------
+        if (stored != null) {
+            for (Map.Entry<String, Album> pair : stored.entrySet()) {
+                try {
+                    Album album = pair.getValue();
+                    int[] checkTime = album.getSongList().get(0).getTimePeriod();
+                    int[] checkDay = album.getSongList().get(0).getDay();
+                    if (checkTime == null || checkDay == null) {
+                        prefs.remove("album map");
+                        album = null;
+                    }
+                } catch (Exception e) {
+                    break;
+                }
+                break;
+            }
+        }
+//------------for testing only------------------
+
         this.albumMap = (stored == null) ? new HashMap<String, Album>() : stored;
     }
 
@@ -85,14 +108,18 @@ public class MusicLoader {
 
             //update album in map if it already exists, otherwise create the album
             if (albumMap.containsKey(albumName)) {
+                Log.d("______", "yes");
+
                 Album toEdit = albumMap.get(albumName);
-                if(!toEdit.contains(songName)) {
-                    toEdit.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
+                if (!toEdit.contains(songName)) {
+                    Song newSong = new Song(songName, song.getPath(), artist, trueLength, albumName);
+                    toEdit.addSong(newSong);
                     albumMap.put(albumName, toEdit);
                 }
             } else {
                 Album toAdd = new Album(albumName);
-                toAdd.addSong(new Song(songName, song.getPath(), artist, trueLength, albumName));
+                Song newSong = new Song(songName, song.getPath(), artist, trueLength, albumName);
+                toAdd.addSong(newSong);
                 albumMap.put(albumName, toAdd);
             }
             fis.close();

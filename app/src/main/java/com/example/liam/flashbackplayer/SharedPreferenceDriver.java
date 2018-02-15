@@ -52,4 +52,9 @@ public class SharedPreferenceDriver {
         return prefs.getInt(id, MainActivity.MODE_SONG);
     }
 
+    public void remove(String key) {
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.remove(key);
+        prefsEditor.apply();
+    }
 }

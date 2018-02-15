@@ -33,7 +33,7 @@ public class Album implements Comparable{
         if(this.cacheCheck.contains(songName)) {
             return true;
         } else {
-            this.cacheCheck.add(songName);
+//            this.cacheCheck.add(songName);
             return false;
         }
     }
