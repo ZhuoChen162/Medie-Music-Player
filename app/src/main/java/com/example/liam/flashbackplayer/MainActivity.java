@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<String, Album> albumMap;
     private ArrayList<Song> masterList;
     private ArrayList<Song> perAlbumList;
+    private ArrayList<Song> flashbackList;
+
     private MediaPlayer mediaPlayer;
     private SeekBar progressSeekBar;
     private SeekBar volumeControl;
@@ -138,13 +140,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        // listener for button playing by flashback
+        // listener for button playing by flashback         ZHAOKAI XU
         Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //update curr loc and time to implement the ranking algorihtm
+                updateLocAndTime();
 
+                PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
+
+                //add songs in pq into the flashbackList
+                for(int i=0; i< pq.size(); i++){
+                    flashbackList.add(pq.peek());
+                    pq.remove();
+                }
             }
         });
 
@@ -471,7 +482,7 @@ public class MainActivity extends AppCompatActivity {
     private void skipSong(int direction) {
         ArrayList<Song> songs = new ArrayList<Song>();
         if(playMode == MODE_FLASHBACK) {
-            //songs = flashbackList;
+            songs = flashbackList;
         } else if(playMode == MODE_ALBUM) {
             songs = perAlbumList;
         } else {
