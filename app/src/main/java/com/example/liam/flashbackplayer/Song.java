@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 
 
-public class Song implements Comparable{
+public class Song implements Comparable {
     public static final int DISLIKE = 0;
     public static final int NEUTRAL = 1;
     public static final int FAVORITE = 2;
@@ -15,7 +15,9 @@ public class Song implements Comparable{
     private String artist;
     private String albumName;
     private int length; //length in milliseconds
-    private ArrayList<Integer> times;
+    private int[] times;
+    private int[] day;
+    private double lastPlayTime;
     private ArrayList<Location> locations;
     private int preference;
 
@@ -25,14 +27,15 @@ public class Song implements Comparable{
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
-        this.times = new ArrayList<Integer>();
+        this.times = new int[3];
+        this.day = new int[7];
         this.locations = new ArrayList<Location>();
         this.preference = NEUTRAL;
     }
 
     public void updateMetadata(Location loc, int time) {
         this.locations.add(loc);
-        this.times.add(time);
+//        this.times.add(time);
     }
 
     public String getName() {
@@ -55,7 +58,7 @@ public class Song implements Comparable{
         return albumName;
     }
 
-    public ArrayList<Integer> getTimes() {
+    public int[] getTimes() {
         return times;
     }
 
@@ -67,14 +70,14 @@ public class Song implements Comparable{
         this.preference = pref;
     }
 
-    public int getPreference(){
+    public int getPreference() {
         return preference;
     }
 
 
     @Override
     public int compareTo(@NonNull Object o) {
-        Song other = (Song)o;
+        Song other = (Song) o;
         return this.name.compareTo(other.getName());
     }
 }
