@@ -33,10 +33,14 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.PriorityQueue;
+import java.util.Comparator;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -60,9 +64,13 @@ public class MainActivity extends AppCompatActivity {
     private int currSong;
     private int playMode;
     private int displayMode;
+
+    //for update loc and time
     private int date, dayOfWeek, hour, mins;
-    private double lastPlayedTime;
+    private long lastPlayedTime;
     private String addressKey;
+    private  String currTime;
+    private double longitude, latitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*
+
         // listener for button playing by flashback
         Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
@@ -139,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-*/
+
+
     }
     //this method is called when the activity is on its way to destruction. Use it to save data.
     @Override
@@ -415,17 +424,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
-                //only when the song is completed,
-                //if the not dislike, store locaiton, day of week, hour and last played time
+                //only when the song is completed, if the not dislike,
+                //store locaiton, day of week, hour and last played time        ZHAOKAI XU
                 if(toPlay.getPreference() != -1)
                 {
-                    toPlay.updateMetadata( addressKey, dayOfWeek, hour, lastPlayedTime );
+                    SongLocation songLocation =  new SongLocation(longitude,latitude);
+                    toPlay.updateMetadata(songLocation , dayOfWeek, hour, lastPlayedTime );
                 }
-
 
                 if (playMode == MODE_ALBUM) {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
                     skipSong(1);
+
+                    //store info and display songs
+                    //update curr loc and time, for display and storage
+                    updateLocAndTime();
+                    //display info
+                    displayInfo(perAlbumList.get(currSong).getName(),
+                            perAlbumList.get(currSong).getAlbumName(), addressKey, currTime);
+
                 }
 
             }
@@ -439,36 +456,8 @@ public class MainActivity extends AppCompatActivity {
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
 
-
-            // want to get current locaiton while starting playing the song
-            // Created by ZHAOKAI XU:
-            GPSTracker gps = new GPSTracker(this);
-            double longitude = gps.getLongitude();
-            double latitude = gps.getLatitude();
-
-            //convert to addres using geocoder provided by google API
-            Geocoder geocoder = new Geocoder(this);
-            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            Address address = addresses.get(0);
-
-            //store the addressKey
-            addressKey = address.getLocality() + address.getFeatureName();
-
-            //get time info to store
-            dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-            date = Calendar.getInstance().get(Calendar.DATE);
-            hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            mins = Calendar.getInstance().get(Calendar.MINUTE);
-
-            //calculate lastPlayedTime in double format
-            lastPlayedTime = date*10000 + hour*100 + mins;
-
-            System.out.println(lastPlayedTime);
-
-            //get current time to display
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            String currTime = sdf.format(new Date());
-
+            //update curr loc and time, for display and storage
+            updateLocAndTime();
             //display info
             displayInfo(toPlay.getName(), toPlay.getAlbumName(), addressKey, currTime);
 
@@ -512,7 +501,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //function to display info of the song when a song starts playing
+    //function to display info of the song when a song starts playing    ZHAOKAI XU(JACKIE)
     private void displayInfo(String name, String album, String loc, String currTime) {
 
         TextView songName = (TextView) findViewById(R.id.SongName);
@@ -525,5 +514,126 @@ public class MainActivity extends AppCompatActivity {
         currentTime.setText("PlayTime: "+currTime);
         currentLocation.setText("Location: "+loc);
     }
+
+
+    //getLocAndTime     ZHAOKAI XU(JACKIE)
+    private void updateLocAndTime(){
+        // want to get current locaiton while starting playing the song
+        // Created by ZHAOKAI XU:
+        GPSTracker gps = new GPSTracker(this);
+        longitude = gps.getLongitude();
+        latitude = gps.getLatitude();
+
+        //convert to addres using geocoder provided by google API
+        Geocoder geocoder = new Geocoder(this);
+        try{
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            Address address = addresses.get(0);
+            //store the addressKey
+            addressKey = address.getLocality() + address.getFeatureName();
+        }
+        catch (Exception e) {
+            Log.e("LOAD MEDIA", e.getMessage());
+        }
+
+        //get time info to store
+        dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        date = Calendar.getInstance().get(Calendar.DATE);
+        hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        mins = Calendar.getInstance().get(Calendar.MINUTE);
+
+        //calculate lastPlayedTime in double format
+        lastPlayedTime = date*10000 + hour*100 + mins;
+
+        //get current time to display
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        currTime= sdf.format(new Date());
+    }
+
+
+    //ranking algorithm of songs at current time     ZHAOKAI XU(JACKIE)
+    private PriorityQueue<Song> rankingAlgorithm( int dayOfweek, int hour, double longitude, double latitude){
+
+        //create a priority queue for ranking
+        Comparator<Song> comparator = new SongsRnakingComparator();
+        PriorityQueue<Song> priorityQueue =
+                new PriorityQueue<Song>(masterList.size(), comparator);
+
+        //traverse the entire songs array to
+        //calculate the ranking of each song at this time;
+        for (int counter = 0; counter < masterList.size(); counter++)
+        {
+            Song theSong = masterList.get(counter);
+
+            //1 check if has prev locaiton by traversing the locaiton list in a song
+            for(int i=0; i< theSong.getLocations().size(); i++ )
+            {
+                double dist = Math.sqrt( Math.pow(longitude - theSong.getLocations().get(i).getLongtitude(),2) +
+                        Math.pow(latitude - theSong.getLocations().get(i).getLatitude(),2));
+                if(dist < 0.001)
+                {
+                    // increase the ranking and quit
+                    theSong.setRankingPlueOne();
+                    break;
+                }
+            }
+
+            //2 check if has same timePeriod
+            if ( 5 <=  hour && hour <11 ){
+                if ( theSong.getTimePeriod()[0]>0)
+                    // increase the ranking
+                    theSong.setRankingPlueOne();
+            }
+            else if ( 11 <= hour && hour < 16){
+                if ( theSong.getTimePeriod()[1]>0)
+                    // increase the ranking
+                    theSong.setRankingPlueOne();
+            }
+            else{
+                if ( theSong.getTimePeriod()[2]>0)
+                    // increase the ranking
+                    theSong.setRankingPlueOne();
+            }
+
+            //3 check the day of week
+            if( theSong.getDay()[dayOfweek] == 1 )
+                // increase the ranking
+                theSong.setRankingPlueOne();
+
+            //4 check if favorited
+            if( theSong.getPreference() ==  1)
+                // increase the ranking
+                theSong.setRankingPlueOne();
+
+            //store the songs into PQ
+            priorityQueue.add(theSong);
+        }
+
+        return priorityQueue;
+    }
+
+    //override the PQ to rank based on songs ranking and lastPlaytime    ZHAOKAI XU(JACKIE)
+    public class SongsRnakingComparator implements Comparator<Song>
+    {
+        public int compare(Song song1, Song song2)
+        {
+            if (song1.getRanking() > song2.getRanking())
+            {
+                return -1;
+            }
+            else if (song1.getRanking() < song2.getRanking())
+            {
+                return 1;
+            }
+            else {
+                if (song1.getlastPlayTime() > song2.getlastPlayTime() )
+                    return -1;
+                else
+                    return 1;
+            }
+            //            return 0;
+        }
+    }
+
 };
 

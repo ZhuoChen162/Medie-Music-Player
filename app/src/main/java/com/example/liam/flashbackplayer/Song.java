@@ -24,13 +24,16 @@ public class Song implements Comparable {
 
     private int[] day;  // day of a week, declared to be an array of size 7
 
-    private double lastPlayTime;    //last time to play the song
+    private long lastPlayTime;    //last time to play the song
                                     //for example: 41726.0 means Thrusday, 17:26
                                     // so the larger nunmber is always the most current played song
 
     private ArrayList<String> locations;    //stores a list of strings of locations
+    private ArrayList<SongLocation>  GPSlocations;
 
     private int preference;
+
+    private int currRanking;
 
 
     public Song(String name, String fileName, String artist, int length, String albumName) {
@@ -39,13 +42,15 @@ public class Song implements Comparable {
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
+
         this.timePeriod = new int[3];
         this.day = new int[7];
-        this.locations = new ArrayList<String>();
+        this.GPSlocations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
+        this.currRanking = 0;
     }
 
-    public void updateMetadata(String loc, int dayOfweek, int hour, double lastPlayTime) {
+    public void updateMetadata(SongLocation loc, int dayOfweek, int hour, long lastPlayTime) {
 
         // set the day of week to be true
         day[dayOfweek-1] = 1;
@@ -60,12 +65,18 @@ public class Song implements Comparable {
 
         this.lastPlayTime = lastPlayTime;
 
-        this.locations.add(loc);
+        this.GPSlocations.add(loc);
     }
 
-    public String getName() {
-        return name;
+    public void setPreference(int pref) {
+        this.preference = pref;
     }
+
+    public void setRankingPlueOne(){ this.currRanking++; }
+
+    public int getRanking() {return currRanking;}
+
+    public String getName() {return name;}
 
     public String getFileName() {
         return fileName;
@@ -83,21 +94,22 @@ public class Song implements Comparable {
         return albumName;
     }
 
+
+    public int[] getDay(){ return day; }
+
     public int[] getTimePeriod() {
         return timePeriod;
     }
 
-    public ArrayList<String> getLocations() {
-        return locations;
-    }
-
-    public void setPreference(int pref) {
-        this.preference = pref;
+    public ArrayList<SongLocation> getLocations() {
+        return GPSlocations;
     }
 
     public int getPreference() {
         return preference;
     }
+
+    public long getlastPlayTime() {return lastPlayTime;}
 
 
     @Override
