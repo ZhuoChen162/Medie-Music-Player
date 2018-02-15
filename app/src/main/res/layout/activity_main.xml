@@ -81,22 +81,26 @@
 
     <Button
         android:id="@+id/skipBack"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="84dp"
-        android:background="@color/colorAccent"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/button_round_sm"
         android:drawableStart="@android:drawable/ic_media_previous"
+        android:paddingEnd="5dp"
+        android:paddingStart="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/player_volume"
         app:layout_constraintEnd_toStartOf="@+id/buttonPlay"
         app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/player_seekbar" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/buttonPlay"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:background="@color/colorAccent"
+        android:background="@drawable/button_round_lg"
         android:drawableStart="@android:drawable/ic_media_play"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
         app:layout_constraintBaseline_toBaselineOf="@+id/skipBack"
         app:layout_constraintEnd_toStartOf="@+id/buttonPause"
         app:layout_constraintStart_toEndOf="@+id/skipBack" />
@@ -105,18 +109,21 @@
         android:id="@+id/buttonPause"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:background="@color/colorAccent"
+        android:background="@drawable/button_round_lg"
         android:drawableStart="@android:drawable/ic_media_pause"
+        android:paddingStart="15dp"
         app:layout_constraintBaseline_toBaselineOf="@+id/skipBack"
         app:layout_constraintEnd_toStartOf="@+id/skipForward"
         app:layout_constraintStart_toEndOf="@+id/buttonPlay" />
 
     <Button
         android:id="@+id/skipForward"
-        android:layout_width="55dp"
-        android:layout_height="59dp"
-        android:background="@color/colorAccent"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:background="@drawable/button_round_sm"
         android:drawableStart="@android:drawable/ic_media_next"
+        android:paddingEnd="5dp"
+        android:paddingStart="5dp"
         app:layout_constraintBaseline_toBaselineOf="@id/skipBack"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/buttonPause" />
