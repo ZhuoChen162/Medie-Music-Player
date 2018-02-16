@@ -11,11 +11,19 @@ import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Class MusicLoader is to let phone load the music from the local phone storage and able to play
+ * it after
+ */
 public class MusicLoader {
     private MediaMetadataRetriever mmr;
     private HashMap<String, Album> albumMap;
 
+    /**
+     * mucicLoader constuctor that pass two variable and set up the music
+     * @param retriever it retriever the music for you
+     * @param prefs able to swtich
+     */
     public MusicLoader(MediaMetadataRetriever retriever, SharedPreferenceDriver prefs) {
         this.mmr = retriever;
 
@@ -43,15 +51,23 @@ public class MusicLoader {
         this.albumMap = (stored == null) ? new HashMap<String, Album>() : stored;
     }
 
+    /**
+     * initial the file and able to populate the file for you when you call this method
+     */
     public void init() {
         File musicDir = readMusicFiles();
         populateAlbumMap(musicDir);
     }
 
+    /**
+     * This is the file to read the music file when call it and return the file after
+     * @return null
+     */
     private File readMusicFiles() {
         //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
         String state = Environment.getExternalStorageState();
-        if (!(Environment.MEDIA_MOUNTED.equals(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
+        if (!(Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))) {
             Log.e("readMusicFiles", "Error: files cannot be read.");
             System.exit(-1);
         }
@@ -64,6 +80,10 @@ public class MusicLoader {
         return null;
     }
 
+    /**
+     * This method is to populate the album map with the given file
+     * @param root file that want to populate
+     */
     private void populateAlbumMap(File root) {
         //if a file in the Music directory is not another directory, it must be a song
         if (!root.isDirectory()) {
@@ -79,7 +99,10 @@ public class MusicLoader {
         }
     }
 
-    //load metadata from songs and construct albums
+    /**
+     * Load metadata from songs and construct albums
+     * @param song file that want to load for albums
+     */
     private void populateAlbumWithSong(File song) {
         try {
             FileInputStream fis = new FileInputStream(song);
@@ -112,7 +135,8 @@ public class MusicLoader {
 
                 Album toEdit = albumMap.get(albumName);
                 if (!toEdit.contains(songName)) {
-                    Song newSong = new Song(songName, song.getPath(), artist, trueLength, albumName);
+                    Song newSong = new Song(songName, song.getPath(), artist,
+                            trueLength, albumName);
                     toEdit.addSong(newSong);
                     albumMap.put(albumName, toEdit);
                 }
@@ -129,6 +153,10 @@ public class MusicLoader {
         }
     }
 
+    /**
+     * Return the hash map of the album map that you build
+     * @return album hash map
+     */
     public HashMap<String, Album> getAlbumMap() {
         return this.albumMap;
     }
