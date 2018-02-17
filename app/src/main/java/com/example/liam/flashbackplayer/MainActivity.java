@@ -134,8 +134,10 @@ public class MainActivity extends AppCompatActivity {
                 if (playMode != MODE_FLASHBACK) {
                     flashbackList = new ArrayList<>();
 
+                    GPSTracker gps = new GPSTracker(v.getContext());
+
                     //update curr loc and time to implement the ranking algorihtm
-                    updateLocAndTime();
+                    updateLocAndTime( gps, Calendar.getInstance());
                     PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
 
                     //add songs in pq into the flashbackList
@@ -466,7 +468,9 @@ public class MainActivity extends AppCompatActivity {
             progressSeekBar.setMax(curMusicDuration);
 
             //update curr loc and time, for display and storage
-            updateLocAndTime();
+            GPSTracker gps = new GPSTracker(this);
+            updateLocAndTime( gps,  Calendar.getInstance() );
+
             //display info
             displayInfo(toPlay.getName(), toPlay.getAlbumName(), addressKey, currTime);
             Drawable pauseImg = getResources().getDrawable(R.drawable.ic_pause);
@@ -532,12 +536,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //getLocAndTime     ZHAOKAI XU(JACKIE)
-    private void updateLocAndTime() {
+    private void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
         // want to get current locaiton while starting playing the song
         // Created by ZHAOKAI XU:
-        GPSTracker gps = new GPSTracker(this);
-        longitude = gps.getLongitude();
-        latitude = gps.getLatitude();
+        //GPSTracker gps = new GPSTracker(this);
+        longitude = gpsTracker.getLongitude();
+        latitude = gpsTracker.getLatitude();
 
         //convert to addres using geocoder provided by google API
         Geocoder geocoder = new Geocoder(this);
@@ -551,16 +555,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //get time info to store
-        dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        date = Calendar.getInstance().get(Calendar.DATE);
-        hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        mins = Calendar.getInstance().get(Calendar.MINUTE);
+        dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        date = calendar.get(Calendar.DATE);
+        hour = calendar.get(Calendar.HOUR_OF_DAY);
+        mins = calendar.get(Calendar.MINUTE);
 
         //calculate lastPlayedTime in double format
         lastPlayedTime = date * 10000 + hour * 100 + mins;
 
         //get current time to display
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         currTime = sdf.format(new Date());
     }
 

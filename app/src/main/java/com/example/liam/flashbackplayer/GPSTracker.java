@@ -39,6 +39,10 @@ public class GPSTracker extends Service implements LocationListener {
         getLocation();
     }
 
+    public GPSTracker() {
+
+    }
+
     /**
      * Location function that check GPS and network to return the location of the phone
      * @return the location of the phone
