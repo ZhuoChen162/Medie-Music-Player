@@ -7,6 +7,7 @@ import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
+import android.widget.Button;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +31,12 @@ public class MediaPlayerTests {
     public GrantPermissionRule permissionRule2 = GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
     @Rule
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    @Before
+    public void ensureSongMode() {
+        ViewInteraction songBtn = onView(withId(R.id.buttonSongs));
+        songBtn.perform(click());
+    }
 
     @Test
     public void manualPlayPauseTest() {
@@ -91,5 +98,34 @@ public class MediaPlayerTests {
             e.printStackTrace();
         }
         assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
+    }
+
+    @Test
+    public void dislikeSkipTest() {
+        MainActivity main = mainAct.getActivity();
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        ViewInteraction skipForward = onView(withId(R.id.skipForward));
+        ViewInteraction skipBack = onView(withId(R.id.skipBack));
+        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
+
+        //test passive skipping in song mode
+        main.masterList.get(0).setPreference(Song.NEUTRAL);
+        main.masterList.get(1).setPreference(Song.DISLIKE);
+        twoLineListItem2.perform(click());
+        assertEquals(0, main.currSong);
+        skipForward.perform(click());
+        assertEquals(2, main.currSong);
+        skipBack.perform(click());
+        assertEquals(0, main.currSong);
+
+        //test active skipping in song mode
+        favico.perform(click());
+        favico.perform(click());
+        assertEquals(2, main.currSong);
+
+        //reset preferences
+        main.masterList.get(0).setPreference(Song.NEUTRAL);
+        main.masterList.get(1).setPreference(Song.NEUTRAL);
+
     }
 }
