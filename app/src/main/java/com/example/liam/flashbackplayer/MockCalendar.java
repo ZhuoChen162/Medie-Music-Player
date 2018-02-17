@@ -9,15 +9,15 @@ import java.util.Date;
 
 public class MockCalendar extends Calendar{
 
-    long millis;
+    private long millis;
 
-    MockCalendar(long millis){ this.millis =  millis;}
+    public MockCalendar(long millis){ this.millis =  millis;}
 
     public static MockCalendar getInstance(){ return new MockCalendar(new Date().getTime());}
 
-    long getTimeInMilis() {return millis;}
+    public long getTimeInMilis() {return millis;}
 
-    void setTimeInMilis(long ms){ millis = ms;}
+    public void setTimeInMilis(long ms){ millis = ms;}
 
     @Override
     protected void computeTime() {

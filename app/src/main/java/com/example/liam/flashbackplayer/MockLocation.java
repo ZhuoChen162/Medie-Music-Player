@@ -6,22 +6,20 @@ package com.example.liam.flashbackplayer;
 
 public class MockLocation extends GPSTracker {
 
-    double longtitude, latitude;
+    private double longitude, latitude;
 
-    MockLocation() {super(); }
-
-    public void setMockLocation(double longtitude, double latitude) {
-        this.longtitude = longtitude;
-        this.latitude =  latitude;
+    public MockLocation(double lati, double longi) {
+        this.latitude = lati;
+        this.longitude = longi;
     }
 
-    public void setLocation(double longtitude, double latitude){
-        this.longtitude =  longtitude;
+    public void setLocation(double latitude, double longitude){
+        this.longitude =  longitude;
         this.latitude = latitude;
     }
 
-    public double getLongtitude() {
-        return longtitude;
+    public double getLongitude() {
+        return longitude;
     }
     public double getLatitude() {
         return latitude;

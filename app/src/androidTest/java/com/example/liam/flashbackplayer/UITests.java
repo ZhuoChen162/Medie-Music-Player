@@ -14,6 +14,7 @@ import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -21,6 +22,10 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
@@ -119,6 +124,47 @@ public class UITests {
         songBtn.perform(click());
         adapter = listView.getAdapter();
         assertEquals(adapter.getCount(), songCount);
+    }
+
+    @Test
+    public void story3Test() {
+        MainActivity main = mActivityTestRule.getActivity();
+        //check to make sure all fields exist when a song is playing
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        twoLineListItem2.perform(click());
+
+        ViewInteraction songName = onView(withId(R.id.SongName));
+        songName.check(matches(isDisplayed()));
+
+        ViewInteraction albumName = onView(withId(R.id.AlbumName));
+        albumName.check(matches(isDisplayed()));
+
+        ViewInteraction currTime = onView(withId(R.id.currentTime));
+        currTime.check(matches(isDisplayed()));
+
+        ViewInteraction currLoc = onView(withId(R.id.currentLocation));
+        currLoc.check(matches(isDisplayed()));
+
+        //Mock Location and Time to make testing deterministic
+        //April 7 1997 03:10 AM, New York, NY
+        MockLocation mockLoc = new MockLocation(40.7732951, -73.9819386);
+        main.updateLocAndTime(mockLoc, Calendar.getInstance());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        long millis = 860407800000L;
+        main.currTime = sdf.format(new Date(millis));
+        assertEquals("New York136", main.addressKey);
+        assertEquals("1997/04/07 03:10", main.currTime);
+        main.displayInfo(main.masterList.get(0).getName(), main.masterList.get(0).getAlbumName(), main.addressKey, main.currTime);
+
+        //Ensure that all fields have appropriate values
+        TextView song = (TextView) main.findViewById(R.id.SongName);
+        TextView album = (TextView) main.findViewById(R.id.AlbumName);
+        TextView loc = (TextView) main.findViewById(R.id.currentLocation);
+        TextView time = (TextView) main.findViewById(R.id.currentTime);
+        assertEquals(main.masterList.get(0).getName(), song.getText());
+        assertEquals("Album: " + main.masterList.get(0).getAlbumName(), album.getText());
+        assertEquals("Location: " + main.addressKey, loc.getText());
+        assertEquals("PlayTime: " + main.currTime, time.getText());
     }
 
     private static Matcher<View> childAtPosition(

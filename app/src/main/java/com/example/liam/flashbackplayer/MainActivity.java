@@ -60,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
     //for update loc and time
     private int date, dayOfWeek, hour, mins;
     private long lastPlayedTime;
-    private String addressKey;
-    private String currTime;
+    protected String addressKey;
+    protected String currTime;
     private double longitude, latitude;
 
     @Override
@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //function to display info of the song when a song starts playing    ZHAOKAI XU(JACKIE)
-    private void displayInfo(String name, String album, String loc, String currTime) {
+    protected void displayInfo(String name, String album, String loc, String currTime) {
 
         TextView songName = (TextView) findViewById(R.id.SongName);
         TextView AlbumName = (TextView) findViewById(R.id.AlbumName);
@@ -536,13 +536,14 @@ public class MainActivity extends AppCompatActivity {
         AlbumName.setText("Album: " + album);
         currentTime.setText("PlayTime: " + currTime);
         currentLocation.setText("Location: " + loc);
+
+        Log.i("ADDRESS", currTime);
     }
 
     //getLocAndTime     ZHAOKAI XU(JACKIE)
     protected void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
         // want to get current locaiton while starting playing the song
         // Created by ZHAOKAI XU:
-        //GPSTracker gps = new GPSTracker(this);
         longitude = gpsTracker.getLongitude();
         latitude = gpsTracker.getLatitude();
 
