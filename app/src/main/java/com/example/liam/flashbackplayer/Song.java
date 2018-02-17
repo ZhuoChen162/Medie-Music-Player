@@ -13,9 +13,9 @@ import java.util.Arrays;
 public class Song implements Comparable {
 
     // initialize the preference to neutural
-    public static final int DISLIKE = -1;
+    public static final int DISLIKE = 1;
     public static final int NEUTRAL = 0;
-    public static final int FAVORITE = 1;
+    public static final int FAVORITE = 2;
 
     private String name;
     private String fileName;
@@ -176,6 +176,25 @@ public class Song implements Comparable {
      */
     public int getPreference() {
         return preference;
+    }
+
+    /**
+     * Change the preference of the song to the next possible kind
+     */
+    public void changePreference() {
+        switch(this.preference) {
+            case(Song.DISLIKE):
+                this.preference = Song.NEUTRAL;
+                break;
+            case(Song.NEUTRAL):
+                this.preference = Song.FAVORITE;
+                break;
+            case(Song.FAVORITE):
+                this.preference = Song.DISLIKE;
+                break;
+            default:
+                break;
+        }
     }
 
     /**

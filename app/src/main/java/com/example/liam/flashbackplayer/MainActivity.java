@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.AudioManager;
+import android.media.Image;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -18,9 +19,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.view.View;
 import android.media.MediaPlayer;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
 
+    public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
+
     protected HashMap<String, Album> albumMap;
     protected ArrayList<Song> masterList;
     protected ArrayList<Song> perAlbumList;
@@ -53,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected final Handler seekBarHandler = new Handler();
 
+    private int skipActive;
     protected int currSong;
     protected int playMode;
     protected int displayMode;
@@ -339,15 +345,29 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(masterList);
 
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
-                ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, masterList) {
+                ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, masterList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
+                        final int pos = position;
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(masterList.get(position).getName());
                         text2.setText(masterList.get(position).getAlbumName());
+                        fave.setImageResource(FAVE_ICONS[masterList.get(position).getPreference()]);
+                        fave.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Song song = masterList.get(pos);
+                                song.changePreference();
+                                fave.setImageResource(FAVE_ICONS[song.getPreference()]);
+                                if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                    skipSong(1);
+                                }
+                            }
+                        });
                         return view;
                     }
                 };
@@ -409,15 +429,29 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         isAlbumExpanded = true;
         perAlbumList = toExpand.getSongList();
-        ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, perAlbumList) {
+        ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, perAlbumList) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
+                final int pos = position;
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                 text1.setText(perAlbumList.get(position).getName());
                 text2.setText(perAlbumList.get(position).getAlbumName());
+                fave.setImageResource(FAVE_ICONS[perAlbumList.get(position).getPreference()]);
+                fave.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Song song = perAlbumList.get(pos);
+                        song.changePreference();
+                        fave.setImageResource(FAVE_ICONS[song.getPreference()]);
+                        if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                            skipSong(1);
+                        }
+                    }
+                });
                 return view;
             }
         };
@@ -469,6 +503,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.start();
             curMusicDuration = mediaPlayer.getDuration();
             progressSeekBar.setMax(curMusicDuration);
+            skipActive = currSong;
 
             //update curr loc and time, for display and storage
             GPSTracker gps = new GPSTracker(this);
@@ -503,6 +538,7 @@ public class MainActivity extends AppCompatActivity {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
                 playPause.setBackground(playImg);
+                currSong = skipActive;
             } catch (Exception e) {
                 Log.e("SKIP SONG", e.getMessage());
             }
@@ -511,11 +547,13 @@ public class MainActivity extends AppCompatActivity {
                 mediaPlayer.stop();
                 mediaPlayer.prepare();
                 playPause.setBackground(playImg);
+                currSong = skipActive;
             } catch (Exception e) {
                 Log.e("SKIP SONG", e.getMessage());
             }
         } else {
             currSong += direction;
+            Log.i("PREF", (songs.get(currSong).getPreference() == Song.DISLIKE) ? "DISLIKE" : "OTHER");
             if (songs.get(currSong).getPreference() == Song.DISLIKE) {
                 skipSong(direction);
             } else {
@@ -618,12 +656,14 @@ public class MainActivity extends AppCompatActivity {
                 theSong.increaseRanking();
 
             //4 check if favorited
-            if (theSong.getPreference() == 1)
+            if (theSong.getPreference() == Song.FAVORITE)
                 // increase the ranking
                 theSong.increaseRanking();
 
             //store the songs into PQ
-            priorityQueue.add(theSong);
+            if(theSong.getPreference() != Song.DISLIKE) {
+                priorityQueue.add(theSong);
+            }
         }
 
         return priorityQueue;
