@@ -70,4 +70,32 @@ public class MediaPlayerTest {
         assertEquals(main.mediaPlayer.isPlaying(), true);
         assertEquals(main.mediaPlayer.getDuration(), main.masterList.get(main.currSong).getLength());
     }
+
+    @Test
+    public void seekbarTest() {
+        MainActivity main = mainAct.getActivity();
+
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        twoLineListItem2.perform(click());
+
+        //check if seekbar status matches song time status (to the nearest second) on initial play and then after 2.5 seconds
+        assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
+        try {
+            Thread.sleep(2500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
+
+        //check to see if seeking to arbitrary point in the song (10 seconds) breaks seekbar
+        main.mediaPlayer.seekTo(10000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
+
+
+    }
 }
