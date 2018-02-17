@@ -21,11 +21,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.anything;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by Liam on 2/16/2018.
- */
-
-public class MediaPlayerTest {
+public class MediaPlayerTests {
     @Rule
     public ActivityTestRule<MainActivity> mainAct = new ActivityTestRule<MainActivity>(MainActivity.class);
     @Rule
@@ -95,7 +91,5 @@ public class MediaPlayerTest {
             e.printStackTrace();
         }
         assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
-
-
     }
 }
