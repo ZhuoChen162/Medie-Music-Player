@@ -1,6 +1,7 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
@@ -137,8 +138,10 @@ public class MainActivity extends AppCompatActivity {
         playFlashBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (playMode != MODE_FLASHBACK) {
-                    flashbackList = new ArrayList<>();
+
+                    flashbackList = new ArrayList<Song>();
 
                     GPSTracker gps = new GPSTracker(v.getContext());
 
@@ -149,11 +152,17 @@ public class MainActivity extends AppCompatActivity {
                     //add songs in pq into the flashbackList
                     while (!pq.isEmpty()) {
                         flashbackList.add(pq.poll());
+
+                        System.out.println("wow ---->>>>>>"+pq.poll().getName());
+
                     }
 
                     //update UI
                     displayMode = MODE_FLASHBACK;
                     populateUI(displayMode);
+
+
+
 //------------for testing only------------------
                     skipSong(1);
 //------------for testing only------------------
@@ -315,6 +324,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * name: initAndLoad()
+     * @para: nothing
+     * purpose: initialize the app and load data
+     * return: nothing
+     */
     private void initAndLoad() {
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
@@ -332,10 +347,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateUI(final int mode) {
+
         isAlbumExpanded = false;
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         switch (mode) {
             case (MODE_SONG):
+
                 masterList = new ArrayList<Song>();
                 for (Album toAdd : albumMap.values()) {
                     masterList.addAll(toAdd.getSongList());
@@ -414,6 +431,7 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case (MODE_FLASHBACK):
+
                 currSong = 0;
                 playMode = displayMode;
                 playSong(flashbackList.get(currSong));
@@ -479,6 +497,7 @@ public class MainActivity extends AppCompatActivity {
     //play songs
     protected void playSong(final Song toPlay) {
 
+        //ending of a song
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
@@ -493,9 +512,14 @@ public class MainActivity extends AppCompatActivity {
                     skipSong(1);
                 }
 
+                if (playMode == MODE_FLASHBACK) {
+                    Log.i("SONG DONE", flashbackList.get(currSong).getName());
+                    skipSong(1);
+                }
             }
         });
 
+        //start of a song
         try {
             mediaPlayer.reset();
             mediaPlayer.setDataSource(toPlay.getFileName());
