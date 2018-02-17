@@ -24,19 +24,19 @@ import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class Story1UI {
+public class UITests {
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
@@ -48,7 +48,7 @@ public class Story1UI {
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     @Test
-    public void story1UI() {
+    public void story1Test() {
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
@@ -89,6 +89,36 @@ public class Story1UI {
         assertEquals(playBtn.getBackground().getConstantState(), mActivityTestRule.getActivity().getResources().getDrawable(R.drawable.ic_play).getConstantState());
 
 
+    }
+
+    @Test
+    public void story2Test() {
+        ListView listView = (ListView) mActivityTestRule.getActivity().findViewById(R.id.songDisplay);
+        ListAdapter adapter = listView.getAdapter();
+        int songCount = adapter.getCount();
+
+        ViewInteraction songBtn = onView(withId(R.id.buttonSongs));
+        ViewInteraction albumBtn = onView(withId(R.id.buttonAlbum));
+
+        //enter album mode
+        albumBtn.perform(click());
+        adapter = listView.getAdapter();
+        int albumCount = adapter.getCount();
+        assertEquals((songCount >= albumCount), true);
+
+        //enter/exit specific album view
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        twoLineListItem2.perform(click());
+        assertEquals(mActivityTestRule.getActivity().isAlbumExpanded, true);
+        adapter = listView.getAdapter();
+        assertThat(adapter.getCount(), greaterThan(0));
+        pressBack();
+        assertEquals(mActivityTestRule.getActivity().isAlbumExpanded, false);
+
+        //enter song mode
+        songBtn.perform(click());
+        adapter = listView.getAdapter();
+        assertEquals(adapter.getCount(), songCount);
     }
 
     private static Matcher<View> childAtPosition(

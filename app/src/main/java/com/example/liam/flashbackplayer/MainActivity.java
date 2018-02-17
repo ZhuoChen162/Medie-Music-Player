@@ -38,24 +38,24 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
 
-    private HashMap<String, Album> albumMap;
-    private ArrayList<Song> masterList;
-    private ArrayList<Song> perAlbumList;
-    private ArrayList<Song> flashbackList;
+    protected HashMap<String, Album> albumMap;
+    protected ArrayList<Song> masterList;
+    protected ArrayList<Song> perAlbumList;
+    protected ArrayList<Song> flashbackList;
 
-    private MediaPlayer mediaPlayer;
-    private SeekBar progressSeekBar;
-    private SeekBar volumeControl;
-    private SharedPreferenceDriver prefs;
-    private boolean isAlbumExpanded;
-    private boolean isActive;
-    private int curMusicDuration;
+    protected MediaPlayer mediaPlayer;
+    protected SeekBar progressSeekBar;
+    protected SeekBar volumeControl;
+    protected SharedPreferenceDriver prefs;
+    protected boolean isAlbumExpanded;
+    protected boolean isActive;
+    protected int curMusicDuration;
 
-    private final Handler seekBarHandler = new Handler();
+    protected final Handler seekBarHandler = new Handler();
 
-    private int currSong;
-    private int playMode;
-    private int displayMode;
+    protected int currSong;
+    protected int playMode;
+    protected int displayMode;
 
     //for update loc and time
     private int date, dayOfWeek, hour, mins;
@@ -286,9 +286,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        for (int res : grantResults) {
+        for (int i = 0; i < grantResults.length; i++) {
+            int res = grantResults[i];
             if (res != PackageManager.PERMISSION_GRANTED) {
                 System.exit(0);
+            } else {
+                Log.i("PERM GRANTED:", permissions[i]);
             }
         }
         initAndLoad();
@@ -440,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //play songs
-    private void playSong(final Song toPlay) {
+    protected void playSong(final Song toPlay) {
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -536,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //getLocAndTime     ZHAOKAI XU(JACKIE)
-    private void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
+    protected void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
         // want to get current locaiton while starting playing the song
         // Created by ZHAOKAI XU:
         //GPSTracker gps = new GPSTracker(this);
