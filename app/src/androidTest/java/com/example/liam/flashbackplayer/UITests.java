@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -34,7 +35,9 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
@@ -165,6 +168,28 @@ public class UITests {
         assertEquals("Album: " + main.masterList.get(0).getAlbumName(), album.getText());
         assertEquals("Location: " + main.addressKey, loc.getText());
         assertEquals("PlayTime: " + main.currTime, time.getText());
+    }
+
+    @Test
+    public void story4Test() {
+        MainActivity main = mActivityTestRule.getActivity();
+        ListView listView = main.findViewById(R.id.songDisplay);
+        View childView = listView.getChildAt(0);
+        ImageView favicoView = (ImageView) childView.findViewById(R.id.pref);
+        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
+        favico.check(matches(isDisplayed()));
+        main.masterList.get(0).setPreference(Song.NEUTRAL);
+
+        //cycle preference icon from neutral to favorite to dislike to neutral
+        assertEquals(main.getResources().getDrawable(R.drawable.ic_add).getConstantState(), favicoView.getDrawable().getConstantState());
+        favico.perform(click());
+        assertEquals(main.getResources().getDrawable(R.drawable.ic_checkmark_sq).getConstantState(), favicoView.getDrawable().getConstantState());
+        favico.perform(click());
+        assertEquals(main.getResources().getDrawable(R.drawable.ic_delete).getConstantState(), favicoView.getDrawable().getConstantState());
+        favico.perform(click());
+        assertEquals(main.getResources().getDrawable(R.drawable.ic_add).getConstantState(), favicoView.getDrawable().getConstantState());
+
+
     }
 
     private static Matcher<View> childAtPosition(
