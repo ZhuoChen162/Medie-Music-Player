@@ -154,9 +154,6 @@ public class MainActivity extends AppCompatActivity {
                     //update UI
                     displayMode = MODE_FLASHBACK;
                     populateUI(displayMode);
-//------------for testing only------------------
-                    skipSong(1);
-//------------for testing only------------------
                 }
             }
         });
@@ -391,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
                 //sort the albums in order
                 Collections.sort(albums);
 
-                ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
+                ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(this, R.layout.song_list, android.R.id.text1, albums) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         View view = super.getView(position, convertView, parent);
@@ -414,9 +411,41 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case (MODE_FLASHBACK):
+                ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, flashbackList) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        final int pos = position;
+                        View view = super.getView(position, convertView, parent);
+                        TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                        TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        final ImageView fave = (ImageView) view.findViewById(R.id.pref);
+
+                        text1.setText(flashbackList.get(position).getName());
+                        text2.setText(flashbackList.get(position).getAlbumName());
+                        fave.setImageResource(FAVE_ICONS[flashbackList.get(position).getPreference()]);
+                        fave.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Song song = flashbackList.get(pos);
+                                song.changePreference();
+                                fave.setImageResource(FAVE_ICONS[song.getPreference()]);
+                                if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                    skipSong(1);
+                                }
+                            }
+                        });
+                        return view;
+                    }
+                };
+                listView.setAdapter(adapter3);
+                listView.setSelection(0);
                 currSong = 0;
                 playMode = displayMode;
-                playSong(flashbackList.get(currSong));
+                if (flashbackList.get(currSong).getPreference() == Song.DISLIKE) {
+                    skipSong(1);
+                } else {
+                    playSong(flashbackList.get(currSong));
+                }
                 break;
         }
     }
@@ -574,8 +603,6 @@ public class MainActivity extends AppCompatActivity {
         AlbumName.setText("Album: " + album);
         currentTime.setText("PlayTime: " + currTime);
         currentLocation.setText("Location: " + loc);
-
-        Log.i("ADDRESS", currTime);
     }
 
     //getLocAndTime     ZHAOKAI XU(JACKIE)
