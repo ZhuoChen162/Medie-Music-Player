@@ -521,6 +521,10 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("SONG DONE", perAlbumList.get(currSong).getName());
                     skipSong(1);
                 }
+                if (playMode == MODE_FLASHBACK) {
+                    Log.i("SONG DONE", flashbackList.get(currSong).getName());
+                    skipSong(1);
+                }
 
             }
         });
