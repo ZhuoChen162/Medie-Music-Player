@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     protected int currSong;
     protected int playMode;
     protected int displayMode;
+    private int prevMode;
 
     //for update loc and time
     private int date, dayOfWeek, hour, mins;
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         playerMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMode = MODE_SONG;
+                displayMode = prevMode;
                 populateUI(displayMode);
             }
         });
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         playFlashBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                prevMode = displayMode;
                 if (playMode != MODE_FLASHBACK) {
                     flashbackList = new ArrayList<>();
 
@@ -148,7 +150,9 @@ public class MainActivity extends AppCompatActivity {
 
                     //update curr loc and time to implement the ranking algorihtm
                     updateLocAndTime(gps, Calendar.getInstance());
-                    PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
+                    FlashbackManager fbm = new FlashbackManager(latitude, longitude, dayOfWeek, hour);
+                    fbm.rankSongs(masterList);
+                    PriorityQueue<Song> pq = fbm.getRankList();
 
                     //add songs in pq into the flashbackList
                     while (!pq.isEmpty()) {
@@ -158,14 +162,13 @@ public class MainActivity extends AppCompatActivity {
                     //update UI
                     displayMode = MODE_FLASHBACK;
                     populateUI(displayMode);
+                } else {
+                    displayMode = MODE_FLASHBACK;
+                    populateUI(displayMode);
                 }
             }
         });
 
-        history = prefs.getHistory("history");
-        if (history == null) {
-            history = new ArrayList<>(50);
-        }
     }
 
     /**
@@ -177,6 +180,9 @@ public class MainActivity extends AppCompatActivity {
         if (this.prefs != null) {
             if (this.albumMap != null) {
                 prefs.saveObject(albumMap, "album map");
+            }
+            if(this.history != null) {
+                prefs.saveObject(history, "history");
             }
             prefs.saveInt(displayMode, "mode");
         }
@@ -283,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * This is the method that build the volume bar and allow to change the volumn inside the
+     * This is the method that build the volume bar and allow to change the volume inside the
      * songs
      */
     private void volumeBarInit() {
@@ -357,10 +363,19 @@ public class MainActivity extends AppCompatActivity {
         currSong = 0;
         //defaults to song mode
         displayMode = prefs.getInt("mode");
+        prevMode = displayMode;
+        history = prefs.getHistory("history");
+        if (history == null) {
+            history = new ArrayList<>(50);
+        }
         isAlbumExpanded = false;
         MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
         loader.init();
         albumMap = loader.getAlbumMap();
+        masterList = new ArrayList<Song>();
+        for (Album toAdd : albumMap.values()) {
+            masterList.addAll(toAdd.getSongList());
+        }
         populateUI(displayMode);
 
     }
@@ -376,11 +391,6 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         switch (mode) {
             case (MODE_SONG):
-                masterList = new ArrayList<Song>();
-                for (Album toAdd : albumMap.values()) {
-                    masterList.addAll(toAdd.getSongList());
-                }
-
                 //Sort the songs alphabetically
                 Collections.sort(masterList);
 
@@ -403,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
                                 Song song = masterList.get(pos);
                                 song.changePreference();
                                 fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                                if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                if (song.getPreference() == Song.DISLIKE && currSong == pos) {
                                     skipSong(1);
                                 }
                             }
@@ -472,7 +482,7 @@ public class MainActivity extends AppCompatActivity {
                                 Song song = flashbackList.get(pos);
                                 song.changePreference();
                                 fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                                if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                if (song.getPreference() == Song.DISLIKE && currSong == pos) {
                                     skipSong(1);
                                 }
                             }
@@ -482,12 +492,20 @@ public class MainActivity extends AppCompatActivity {
                 };
                 listView.setAdapter(adapter3);
                 listView.setSelection(0);
-                currSong = 0;
-                playMode = displayMode;
-                if (flashbackList.get(currSong).getPreference() == Song.DISLIKE) {
-                    skipSong(1);
-                } else {
-                    playSong(flashbackList.get(currSong));
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        //do nothing when clicked; user should not be able to manually choose song in album mode
+                    }
+                });
+                if(playMode != displayMode) {
+                    currSong = 0;
+                    if (flashbackList.get(currSong).getPreference() == Song.DISLIKE) {
+                        skipSong(1);
+                    } else {
+                        playSong(flashbackList.get(currSong));
+                    }
+                    playMode = displayMode;
                 }
                 break;
         }
@@ -525,7 +543,7 @@ public class MainActivity extends AppCompatActivity {
                         Song song = perAlbumList.get(pos);
                         song.changePreference();
                         fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                        if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                        if (song.getPreference() == Song.DISLIKE && currSong == pos) {
                             skipSong(1);
                         }
                     }
@@ -566,7 +584,7 @@ public class MainActivity extends AppCompatActivity {
             public void onCompletion(MediaPlayer mediaPlayer) {
 
                 //only when the song is completed,
-                //store locaiton, day of week, hour and last played time        ZHAOKAI XU
+                //store location, day of week, hour and last played time        ZHAOKAI XU
                 SongLocation songLocation = new SongLocation(longitude, latitude);
                 toPlay.updateMetadata(songLocation, dayOfWeek, hour, lastPlayedTime);
 
@@ -606,7 +624,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         addToHistory(toPlay);
-        prefs.saveObject(history, "history");
     }
 
     /**
@@ -695,7 +712,7 @@ public class MainActivity extends AppCompatActivity {
             //store the addressKey
             addressKey = address.getLocality() + address.getFeatureName();
         } catch (Exception e) {
-            Log.e("LOAD MEDIA", e.getMessage());
+            Log.e("GEOCODER", e.getMessage());
         }
 
         //get time info to store
@@ -710,91 +727,6 @@ public class MainActivity extends AppCompatActivity {
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         currTime = sdf.format(new Date());
-    }
-
-    /**
-     * ranking algorithm of songs at current time
-     *
-     * @param dayOfweek time of the week
-     * @param hour      hour of the time
-     * @param longitude location
-     * @param latitude  location
-     * @return ranking priorityQueue that store the ranking
-     */
-    private PriorityQueue<Song> rankingAlgorithm(int dayOfweek, int hour, double longitude, double latitude) {
-
-        //create a priority queue for ranking
-        Comparator<Song> comparator = new SongsRankingComparator();
-        PriorityQueue<Song> priorityQueue =
-                new PriorityQueue<Song>(masterList.size(), comparator);
-
-        //traverse the entire songs array to
-        //calculate the ranking of each song at this time;
-        for (int counter = 0; counter < masterList.size(); counter++) {
-            Song theSong = masterList.get(counter);
-
-            //1 check if has prev locaiton by traversing the locaiton list in a song
-            for (int i = 0; i < theSong.getLocations().size(); i++) {
-                double dist = Math.sqrt(Math.pow(longitude - theSong.getLocations().get(i).longitude, 2) +
-                        Math.pow(latitude - theSong.getLocations().get(i).latitude, 2));
-                if (dist < 0.001) {
-                    // increase the ranking and quit
-                    theSong.increaseRanking();
-                    break;
-                }
-            }
-
-            //2 check if has same timePeriod
-            if (5 <= hour && hour < 11) {
-                if (theSong.getTimePeriod()[0] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            } else if (11 <= hour && hour < 16) {
-                if (theSong.getTimePeriod()[1] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            } else {
-                if (theSong.getTimePeriod()[2] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            }
-
-            //3 check the day of week
-            if (theSong.getDay()[dayOfweek - 1] == 1)
-                // increase the ranking
-                theSong.increaseRanking();
-
-            //4 check if favorited
-            if (theSong.getPreference() == Song.FAVORITE)
-                // increase the ranking
-                theSong.increaseRanking();
-
-            //store the songs into PQ
-            if (theSong.getPreference() != Song.DISLIKE) {
-                priorityQueue.add(theSong);
-            }
-        }
-
-        return priorityQueue;
-    }
-
-    /**
-     * override the PQ to rank based on songs ranking and lastPlaytime    ZHAOKAI XU(JACKIE)
-     */
-    public class SongsRankingComparator implements Comparator<Song> {
-        @Override
-        public int compare(Song left, Song right) {
-            if (left.getRanking() > right.getRanking()) {
-                return -1;
-            } else if (left.getRanking() < right.getRanking()) {
-                return 1;
-            } else {
-                if (left.getLastPlayTime() > right.getLastPlayTime())
-                    return -1;
-                else
-                    return 1;
-            }
-        }
     }
 
 
@@ -853,4 +785,4 @@ public class MainActivity extends AppCompatActivity {
         }
         history.add(curSong);
     }
-};
+}
