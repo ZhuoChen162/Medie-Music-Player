@@ -10,6 +10,7 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/btn_sortby"
         android:icon="@drawable/ic_sort"
         android:orderInCategory="2"
         android:title="Sort by:"
