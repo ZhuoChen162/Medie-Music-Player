@@ -7,13 +7,13 @@
         android:icon="@drawable/ic_history"
         android:orderInCategory="1"
         android:title="History"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:icon="@drawable/ic_sort"
         android:orderInCategory="2"
         android:title="Sort by:"
-        app:showAsAction="always">
+        app:showAsAction="ifRoom">
 
         <menu>
             <group android:checkableBehavior="single">

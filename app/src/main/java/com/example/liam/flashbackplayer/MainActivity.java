@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.AudioManager;
-import android.media.Image;
 import android.media.MediaMetadataRetriever;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -25,7 +24,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -55,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     protected ArrayList<Song> perAlbumList;
     protected ArrayList<Song> flashbackList;
     protected ArrayList<Song> history;
+    protected ArrayList<String> historyTime;
 
     protected MediaPlayer mediaPlayer;
     protected SeekBar progressSeekBar;
@@ -127,12 +126,29 @@ public class MainActivity extends AppCompatActivity {
         volumeBarInit();
 
         // listener for button playing by songs in alphabetic order
-        Button playerMode = (Button) findViewById(R.id.btn_player_mode);
-        playerMode.setOnClickListener(new View.OnClickListener() {
+        Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
+        sortByName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 displayMode = MODE_SONG;
                 populateUI(displayMode);
+            }
+        });
+
+        Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
+        sortByAlbum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMode = MODE_ALBUM;
+                populateUI(displayMode);
+            }
+        });
+
+        Button viewHistory = (Button) findViewById(R.id.btn_view_history);
+        viewHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewHistory();
             }
         });
 
@@ -165,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
         history = prefs.getHistory("history");
         if (history == null) {
             history = new ArrayList<>(50);
+            historyTime = new ArrayList<>(50);
         }
     }
 
@@ -179,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 prefs.saveObject(albumMap, "album map");
             }
             prefs.saveInt(displayMode, "mode");
+            prefs.saveObject(historyTime, "historyTime");
         }
         isActive = false;
     }
@@ -605,8 +623,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("LOAD MEDIA", e.getMessage());
         }
 
-        addToHistory(toPlay);
-        prefs.saveObject(history, "history");
+        addToHistory(toPlay, Calendar.getInstance());
     }
 
     /**
@@ -797,38 +814,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-
-        // Handle item selection
-        switch (itemId) {
-            case R.id.btn_history:
-                viewHistory();
-                return true;
-            case R.id.btn_sortby_name:
-                item.setChecked(true);
-                displayMode = MODE_SONG;
-                populateUI(displayMode);
-                return true;
-            case R.id.btn_sortby_album:
-                item.setChecked(true);
-                displayMode = MODE_ALBUM;
-                populateUI(displayMode);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     private void viewHistory() {
         ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, history) {
             @Override
@@ -838,7 +823,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
                 text1.setText(history.get(position).getName());
-                text2.setText(history.get(position).getAlbumName());
+                text2.setText(historyTime.get(position));
                 return view;
             }
         };
@@ -847,10 +832,12 @@ public class MainActivity extends AppCompatActivity {
         listView.setSelection(0);
     }
 
-    private void addToHistory(Song curSong) {
+    private void addToHistory(Song curSong, Calendar calendar) {
         if (history.size() > 49) {
-            history.remove(0);
+            history.remove(49);
+            historyTime.remove(49);
         }
-        history.add(curSong);
+        history.add(0, curSong);
+        historyTime.add(0, calendar.getTime().toString());
     }
 };

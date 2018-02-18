@@ -77,6 +77,14 @@ public class SharedPreferenceDriver {
         return gson.fromJson(json, alistType);
     }
 
+    public ArrayList<String> getHistoryTime(String id) {
+        Gson gson = new Gson();
+        String json = prefs.getString(id, "");
+        Type alistType = new TypeToken<ArrayList<String>>() {
+        }.getType();
+        return gson.fromJson(json, alistType);
+    }
+
     /**
      * Save the sharedPreference Int for the preference
      *

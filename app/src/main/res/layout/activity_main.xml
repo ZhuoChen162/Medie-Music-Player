@@ -7,13 +7,31 @@
     tools:context="com.example.liam.flashbackplayer.MainActivity">
 
     <Button
-        android:id="@+id/btn_player_mode"
+        android:id="@+id/btn_sortby_name"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_marginStart="10dp"
-        android:text="Player"
+        android:text="Name"
         android:textColor="@color/colorAccent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_sortby_album"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Album"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintStart_toEndOf="@id/btn_sortby_name"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_view_history"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:text="Hist"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintStart_toEndOf="@id/btn_sortby_album"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -23,7 +41,7 @@
         android:layout_marginEnd="10dp"
         android:text="FlashBack"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBaseline_toBaselineOf="@+id/btn_player_mode"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_sortby_name"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ListView
@@ -32,7 +50,7 @@
         android:layout_height="250dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_player_mode" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_sortby_name" />
 
     <TextView
         android:id="@+id/cur_progress_time"
@@ -155,7 +173,7 @@
 
     <TextView
         android:id="@+id/currentTime"
-        android:layout_width="172dp"
+        android:layout_width="148dp"
         android:layout_height="42dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
