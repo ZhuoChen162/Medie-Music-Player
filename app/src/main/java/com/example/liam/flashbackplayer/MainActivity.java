@@ -36,6 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 
+/**
+ * Main Activity that build the all the media player functionality such as
+ * song mode, album mode, or flashback mode ect.
+ */
 public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
     public static final int MODE_ALBUM = 1;
@@ -70,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
     protected String currTime;
     private double longitude, latitude;
 
+    /**
+     * Override the oncreate method to handle the basic button function such as
+     * play/pause button, skip forward/back button
+     * @param savedInstanceState save the state for the buttons
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -161,7 +170,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //this method is called when the activity is on its way to destruction. Use it to save data.
+    /**
+     *  this method is called when the activity is on its way to destruction. Use it to save data.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -174,12 +185,18 @@ public class MainActivity extends AppCompatActivity {
         isActive = false;
     }
 
+    /**
+     * Method that when call it, the resume function will work.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         isActive = true;
     }
 
+    /**
+     * Destroy and clear the app data when call
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -188,7 +205,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //use back button to navigate only while in album mode, otherwise default
+    /**
+     *  use back button to navigate only while in album mode, otherwise default
+     */
     @Override
     public void onBackPressed() {
         if (isAlbumExpanded) {
@@ -199,6 +218,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This method is the build the song prograss bar that allow to speed up to some certain points
+     */
     private void progressBarInit() {
         progressSeekBar = findViewById(R.id.player_seekbar);
         progressSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -235,6 +257,12 @@ public class MainActivity extends AppCompatActivity {
         seekBarHandler.postDelayed(seekBarUpdate, 1000);
     }
 
+    /**
+     * function that translate the time from millsec to time string
+     * @param milliSec time that want to translate
+     * @param positive true if want to translate
+     * @return the string of the time
+     */
     private String milliSecToTime(int milliSec, boolean positive) {
         String time = "";
         String strSeconds = "";
@@ -255,6 +283,10 @@ public class MainActivity extends AppCompatActivity {
         return time;
     }
 
+    /**
+     * This is the method that build the volume bar and allow to change the volumn inside the
+     * songs
+     */
     private void volumeBarInit() {
         final SharedPreferenceDriver volumeMem = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
         int lastVolume = volumeMem.getVolume();
@@ -286,7 +318,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Give the permission check for the pass in things
+     * @param requestCode code that want to request
+     * @param permissions that want to use
+     * @param grantResults give the result
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         for (int i = 0; i < grantResults.length; i++) {
@@ -328,6 +365,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * This will populate the listview that will hold all the songs in the local file and
+     * sort them and can scroll up and down to check songs.
+     * @param mode current mode that in
+     */
     private void populateUI(final int mode) {
         isAlbumExpanded = false;
         ListView listView = (ListView) findViewById(R.id.songDisplay);
@@ -450,6 +492,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This is the method that will expand the album base on the album name when call it
+     * @param view view the album on the phone
+     * @param toExpand album that want to expand
+     */
     private void expandAlbum(View view, Album toExpand) {
         boolean play = true;
         if (perAlbumList != null && currSong < perAlbumList.size() && playMode == displayMode && perAlbumList.get(currSong).getAlbumName().equals(toExpand.getName())) {
@@ -505,7 +552,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //play songs
+    /**
+     * This is the method when call it to play music when call
+     * @param toPlay song to play
+     */
     protected void playSong(final Song toPlay) {
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -553,8 +603,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * skip forward or backward. Direction = -1 for back, 1 for forward.
 
-    //skip forward or backward. Direction = -1 for back, 1 for forward.
+     * @param direction 1 is forward -1 is backward.
+     */
     private void skipSong(int direction) {
         ArrayList<Song> songs = new ArrayList<Song>();
         Drawable playImg = getResources().getDrawable(R.drawable.ic_play);
@@ -595,7 +648,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //function to display info of the song when a song starts playing    ZHAOKAI XU(JACKIE)
+    /**
+     * function to display info of the song when a song starts playing
+     * @param name of the song
+     * @param album of the song
+     * @param loc when play it
+     * @param currTime time when play the song
+     */
     protected void displayInfo(String name, String album, String loc, String currTime) {
 
         TextView songName = (TextView) findViewById(R.id.SongName);
@@ -609,7 +668,11 @@ public class MainActivity extends AppCompatActivity {
         currentLocation.setText("Location: " + loc);
     }
 
-    //getLocAndTime     ZHAOKAI XU(JACKIE)
+    /**
+     * Update the location and time when call with GPS and time
+     * @param gpsTracker location tracker
+     * @param calendar time
+     */
     protected void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
         // want to get current locaiton while starting playing the song
         // Created by ZHAOKAI XU:
@@ -641,8 +704,14 @@ public class MainActivity extends AppCompatActivity {
         currTime = sdf.format(new Date());
     }
 
-
-    //ranking algorithm of songs at current time     ZHAOKAI XU(JACKIE)
+    /**
+     *  ranking algorithm of songs at current time
+     * @param dayOfweek time of the week
+     * @param hour hour of the time
+     * @param longitude location
+     * @param latitude location
+     * @return ranking priorityQueue that store the ranking
+     */
     private PriorityQueue<Song> rankingAlgorithm(int dayOfweek, int hour, double longitude, double latitude) {
 
         //create a priority queue for ranking
@@ -700,7 +769,9 @@ public class MainActivity extends AppCompatActivity {
         return priorityQueue;
     }
 
-    //override the PQ to rank based on songs ranking and lastPlaytime    ZHAOKAI XU(JACKIE)
+    /**
+     * override the PQ to rank based on songs ranking and lastPlaytime    ZHAOKAI XU(JACKIE)
+     */
     public class SongsRankingComparator implements Comparator<Song> {
         @Override
         public int compare(Song left, Song right) {
