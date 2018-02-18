@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         history = prefs.getHistory("history");
+        historyTime = prefs.getHistoryTime("historyTime");
         if (history == null) {
             history = new ArrayList<>(50);
             historyTime = new ArrayList<>(50);
@@ -203,11 +204,13 @@ public class MainActivity extends AppCompatActivity {
             if (this.albumMap != null) {
                 prefs.saveObject(albumMap, "album map");
             }
-            if(this.history != null) {
+            if (this.history != null) {
                 prefs.saveObject(history, "history");
             }
+            if (this.historyTime != null) {
+                prefs.saveObject(historyTime, "historyTime");
+            }
             prefs.saveInt(displayMode, "mode");
-            prefs.saveObject(historyTime, "historyTime");
         }
         isActive = false;
     }
@@ -516,7 +519,7 @@ public class MainActivity extends AppCompatActivity {
                         //do nothing when clicked; user should not be able to manually choose song in flashback mode
                     }
                 });
-                if(playMode != displayMode) {
+                if (playMode != displayMode) {
                     currSong = 0;
                     if (flashbackList.get(currSong).getPreference() == Song.DISLIKE) {
                         skipSong(1);
