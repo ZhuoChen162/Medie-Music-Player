@@ -13,6 +13,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
+    public static final int MODE_HISTORY = 3;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
 
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     protected ArrayList<Song> masterList;
     protected ArrayList<Song> perAlbumList;
     protected ArrayList<Song> flashbackList;
+    protected ArrayList<Song> history;
 
     protected MediaPlayer mediaPlayer;
     protected SeekBar progressSeekBar;
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Override the oncreate method to handle the basic button function such as
      * play/pause button, skip forward/back button
+     *
      * @param savedInstanceState save the state for the buttons
      */
     @Override
@@ -122,21 +127,11 @@ public class MainActivity extends AppCompatActivity {
         volumeBarInit();
 
         // listener for button playing by songs in alphabetic order
-        Button playSongs = (Button) findViewById(R.id.buttonSongs);
-        playSongs.setOnClickListener(new View.OnClickListener() {
+        Button playerMode = (Button) findViewById(R.id.btn_player_mode);
+        playerMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 displayMode = MODE_SONG;
-                populateUI(displayMode);
-            }
-        });
-
-        // listener for button playing by albums
-        Button playAlbums = (Button) findViewById(R.id.buttonAlbum);
-        playAlbums.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayMode = MODE_ALBUM;
                 populateUI(displayMode);
             }
         });
@@ -152,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     GPSTracker gps = new GPSTracker(v.getContext());
 
                     //update curr loc and time to implement the ranking algorihtm
-                    updateLocAndTime( gps, Calendar.getInstance());
+                    updateLocAndTime(gps, Calendar.getInstance());
                     PriorityQueue<Song> pq = rankingAlgorithm(dayOfWeek, hour, longitude, latitude);
 
                     //add songs in pq into the flashbackList
@@ -167,11 +162,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        history = prefs.getHistory("history");
+        if (history == null) {
+            history = new ArrayList<>(50);
+        }
     }
 
     /**
-     *  this method is called when the activity is on its way to destruction. Use it to save data.
+     * this method is called when the activity is on its way to destruction. Use it to save data.
      */
     @Override
     protected void onPause() {
@@ -206,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  use back button to navigate only while in album mode, otherwise default
+     * use back button to navigate only while in album mode, otherwise default
      */
     @Override
     public void onBackPressed() {
@@ -259,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * function that translate the time from millsec to time string
+     *
      * @param milliSec time that want to translate
      * @param positive true if want to translate
      * @return the string of the time
@@ -320,8 +319,9 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Give the permission check for the pass in things
-     * @param requestCode code that want to request
-     * @param permissions that want to use
+     *
+     * @param requestCode  code that want to request
+     * @param permissions  that want to use
      * @param grantResults give the result
      */
     @Override
@@ -368,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This will populate the listview that will hold all the songs in the local file and
      * sort them and can scroll up and down to check songs.
+     *
      * @param mode current mode that in
      */
     private void populateUI(final int mode) {
@@ -402,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                                 Song song = masterList.get(pos);
                                 song.changePreference();
                                 fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                                if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
                                     skipSong(1);
                                 }
                             }
@@ -471,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
                                 Song song = flashbackList.get(pos);
                                 song.changePreference();
                                 fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                                if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                                if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
                                     skipSong(1);
                                 }
                             }
@@ -494,7 +495,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * This is the method that will expand the album base on the album name when call it
-     * @param view view the album on the phone
+     *
+     * @param view     view the album on the phone
      * @param toExpand album that want to expand
      */
     private void expandAlbum(View view, Album toExpand) {
@@ -523,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
                         Song song = perAlbumList.get(pos);
                         song.changePreference();
                         fave.setImageResource(FAVE_ICONS[song.getPreference()]);
-                        if(song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
+                        if (song.getPreference() == Song.DISLIKE && currSong == pos && mediaPlayer.isPlaying()) {
                             skipSong(1);
                         }
                     }
@@ -554,6 +556,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * This is the method when call it to play music when call
+     *
      * @param toPlay song to play
      */
     protected void playSong(final Song toPlay) {
@@ -590,7 +593,7 @@ public class MainActivity extends AppCompatActivity {
 
             //update curr loc and time, for display and storage
             GPSTracker gps = new GPSTracker(this);
-            updateLocAndTime( gps,  Calendar.getInstance() );
+            updateLocAndTime(gps, Calendar.getInstance());
 
             //display info
             displayInfo(toPlay.getName(), toPlay.getAlbumName(), addressKey, currTime);
@@ -601,11 +604,14 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("LOAD MEDIA", e.getMessage());
         }
+
+        addToHistory(toPlay);
+        prefs.saveObject(history, "history");
     }
 
     /**
      * skip forward or backward. Direction = -1 for back, 1 for forward.
-
+     *
      * @param direction 1 is forward -1 is backward.
      */
     private void skipSong(int direction) {
@@ -650,9 +656,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * function to display info of the song when a song starts playing
-     * @param name of the song
-     * @param album of the song
-     * @param loc when play it
+     *
+     * @param name     of the song
+     * @param album    of the song
+     * @param loc      when play it
      * @param currTime time when play the song
      */
     protected void displayInfo(String name, String album, String loc, String currTime) {
@@ -670,8 +677,9 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Update the location and time when call with GPS and time
+     *
      * @param gpsTracker location tracker
-     * @param calendar time
+     * @param calendar   time
      */
     protected void updateLocAndTime(GPSTracker gpsTracker, Calendar calendar) {
         // want to get current locaiton while starting playing the song
@@ -705,11 +713,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  ranking algorithm of songs at current time
+     * ranking algorithm of songs at current time
+     *
      * @param dayOfweek time of the week
-     * @param hour hour of the time
+     * @param hour      hour of the time
      * @param longitude location
-     * @param latitude location
+     * @param latitude  location
      * @return ranking priorityQueue that store the ranking
      */
     private PriorityQueue<Song> rankingAlgorithm(int dayOfweek, int hour, double longitude, double latitude) {
@@ -761,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
                 theSong.increaseRanking();
 
             //store the songs into PQ
-            if(theSong.getPreference() != Song.DISLIKE) {
+            if (theSong.getPreference() != Song.DISLIKE) {
                 priorityQueue.add(theSong);
             }
         }
@@ -788,4 +797,60 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        // Handle item selection
+        switch (itemId) {
+            case R.id.btn_history:
+                viewHistory();
+                return true;
+            case R.id.btn_sortby_name:
+                item.setChecked(true);
+                displayMode = MODE_SONG;
+                populateUI(displayMode);
+                return true;
+            case R.id.btn_sortby_album:
+                item.setChecked(true);
+                displayMode = MODE_ALBUM;
+                populateUI(displayMode);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void viewHistory() {
+        ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, history) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                text1.setText(history.get(position).getName());
+                text2.setText(history.get(position).getAlbumName());
+                return view;
+            }
+        };
+        ListView listView = (ListView) findViewById(R.id.songDisplay);
+        listView.setAdapter(songArrayAdapter);
+        listView.setSelection(0);
+    }
+
+    private void addToHistory(Song curSong) {
+        if (history.size() > 49) {
+            history.remove(0);
+        }
+        history.add(curSong);
+    }
 };
