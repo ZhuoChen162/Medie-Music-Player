@@ -34,7 +34,7 @@ public class MediaPlayerTests {
 
     @Before
     public void ensureSongMode() {
-        ViewInteraction songBtn = onView(withId(R.id.btn_sortby));
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
         songBtn.perform(click());
     }
 

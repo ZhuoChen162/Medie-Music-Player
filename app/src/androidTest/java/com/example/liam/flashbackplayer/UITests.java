@@ -75,10 +75,10 @@ public class UITests {
         ViewInteraction button3 = onView(withId(R.id.skipForward));
         button3.check(matches(isDisplayed()));
 
-        ViewInteraction button4 = onView(withId(R.id.buttonSongs));
+        ViewInteraction button4 = onView(withId(R.id.btn_sortby_name));
         button4.check(matches(isDisplayed()));
 
-        ViewInteraction button5 = onView(withId(R.id.buttonAlbum));
+        ViewInteraction button5 = onView(withId(R.id.btn_sortby_album));
         button5.check(matches(isDisplayed()));
 
         ViewInteraction button6 = onView(withId(R.id.buttonFlashBack));

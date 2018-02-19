@@ -49,7 +49,7 @@ public class MiscTests {
         assertEquals(false, sorted == unsorted);
 
         //check if albums in album mode are in alphabetical order
-        ViewInteraction albumBtn = onView(withId(R.id.buttonAlbum));
+        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
         albumBtn.perform(click());
         unsorted = new ArrayList<>();
         sorted = new ArrayList<>();
