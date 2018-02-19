@@ -25,15 +25,11 @@ public class Song implements Comparable {
 
     private int[] timePeriod; // period of a day, declared to be an array of size 3
     //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
-
     private int[] day;  // day of a week, declared to be an array of size 7
-
     private long lastPlayTime;    //last time to play the song
     //for example: 41726.0 means Thrusday, 17:26
     // so the larger nunmber is always the most current played song
-
     private ArrayList<SongLocation> locations;
-
     private int preference;
 
     private int ranking;
@@ -209,6 +205,10 @@ public class Song implements Comparable {
     public int compareTo(@NonNull Object o) {
         Song other = (Song) o;
         return this.name.compareTo(other.getName());
+    }
+
+    public Song(){
+        // default constructor, just for testing
     }
 }
 

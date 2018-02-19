@@ -20,6 +20,7 @@ import android.widget.TextView;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,12 @@ public class UITests {
     @Rule
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+    @Before
+    public void ensureSongMode() {
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        songBtn.perform(click());
+    }
+
     @Test
     public void story1Test() {
         // Added a sleep statement to match the app's execution delay.
@@ -75,10 +82,10 @@ public class UITests {
         ViewInteraction button3 = onView(withId(R.id.skipForward));
         button3.check(matches(isDisplayed()));
 
-        ViewInteraction button4 = onView(withId(R.id.buttonSongs));
+        ViewInteraction button4 = onView(withId(R.id.btn_sortby_name));
         button4.check(matches(isDisplayed()));
 
-        ViewInteraction button5 = onView(withId(R.id.buttonAlbum));
+        ViewInteraction button5 = onView(withId(R.id.btn_sortby_album));
         button5.check(matches(isDisplayed()));
 
         ViewInteraction button6 = onView(withId(R.id.buttonFlashBack));
@@ -105,8 +112,8 @@ public class UITests {
         ListAdapter adapter = listView.getAdapter();
         int songCount = adapter.getCount();
 
-        ViewInteraction songBtn = onView(withId(R.id.buttonSongs));
-        ViewInteraction albumBtn = onView(withId(R.id.buttonAlbum));
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
 
         //enter album mode
         albumBtn.perform(click());
@@ -188,8 +195,24 @@ public class UITests {
         assertEquals(main.getResources().getDrawable(R.drawable.ic_delete).getConstantState(), favicoView.getDrawable().getConstantState());
         favico.perform(click());
         assertEquals(main.getResources().getDrawable(R.drawable.ic_add).getConstantState(), favicoView.getDrawable().getConstantState());
+    }
 
+    @Test
+    public void story5Test() {
+        MainActivity main = mActivityTestRule.getActivity();
+        ListView listView = main.findViewById(R.id.songDisplay);
+        View childView = listView.getChildAt(0);
+        ImageView favicoView = (ImageView) childView.findViewById(R.id.pref);
+        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
+        favico.check(matches(isDisplayed()));
+        main.masterList.get(0).setPreference(Song.FAVORITE);
 
+        //simulating touching flashback button
+        ViewInteraction flashbackButton = onView(withId(R.id.buttonFlashBack));
+        flashbackButton.perform(click());
+
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        twoLineListItem2.check(matches(isDisplayed()));
     }
 
     private static Matcher<View> childAtPosition(

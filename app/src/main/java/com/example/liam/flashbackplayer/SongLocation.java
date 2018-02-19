@@ -15,4 +15,8 @@ class SongLocation {
         this.longitude = longitude;
         this.latitude = latitude;
     }
+
+    public double getlongtitude(){ return longitude;}
+
+    public double getLatitude(){ return latitude;}
 }

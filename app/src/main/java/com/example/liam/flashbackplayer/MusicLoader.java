@@ -131,8 +131,6 @@ public class MusicLoader {
 
             //update album in map if it already exists, otherwise create the album
             if (albumMap.containsKey(albumName)) {
-                Log.d("______", "yes");
-
                 Album toEdit = albumMap.get(albumName);
                 if (!toEdit.contains(songName)) {
                     Song newSong = new Song(songName, song.getPath(), artist,

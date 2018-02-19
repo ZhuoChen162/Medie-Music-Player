@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Adapter;
 import android.widget.ListView;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -29,6 +30,12 @@ public class MiscTests {
     @Rule
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+    @Before
+    public void ensureSongMode() {
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        songBtn.perform(click());
+    }
+
     @Test
     public void trackListSortedTest() {
         MainActivity main = mainAct.getActivity();
@@ -49,7 +56,7 @@ public class MiscTests {
         assertEquals(false, sorted == unsorted);
 
         //check if albums in album mode are in alphabetical order
-        ViewInteraction albumBtn = onView(withId(R.id.buttonAlbum));
+        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
         albumBtn.perform(click());
         unsorted = new ArrayList<>();
         sorted = new ArrayList<>();
