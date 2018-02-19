@@ -20,6 +20,7 @@ import android.widget.TextView;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +55,12 @@ public class UITests {
     public GrantPermissionRule permissionRule2 = GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
     @Rule
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    @Before
+    public void ensureSongMode() {
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        songBtn.perform(click());
+    }
 
     @Test
     public void story1Test() {
@@ -105,8 +112,8 @@ public class UITests {
         ListAdapter adapter = listView.getAdapter();
         int songCount = adapter.getCount();
 
-        ViewInteraction songBtn = onView(withId(R.id.buttonSongs));
-        ViewInteraction albumBtn = onView(withId(R.id.buttonAlbum));
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
 
         //enter album mode
         albumBtn.perform(click());

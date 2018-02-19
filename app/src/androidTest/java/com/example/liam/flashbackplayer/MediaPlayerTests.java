@@ -59,6 +59,9 @@ public class MediaPlayerTests {
     @Test
     public void skipBackForthTest() {
         MainActivity main = mainAct.getActivity();
+        for(Song song : main.masterList) {
+            song.setPreference(Song.NEUTRAL);
+        }
 
         DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
         twoLineListItem2.perform(click());
