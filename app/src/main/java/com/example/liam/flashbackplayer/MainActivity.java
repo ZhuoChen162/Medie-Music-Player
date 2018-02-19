@@ -525,10 +525,10 @@ public class MainActivity extends AppCompatActivity {
                     currSong = 0;
                     if (flashbackList.size() != 0) {
                         playSong(flashbackList.get(currSong));
+                        playMode = displayMode;
                     } else {
-                        Toast.makeText(getApplicationContext(), "No memory yet, please play some songs", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "No song history yet. Play or favorite songs to get started!", Toast.LENGTH_LONG).show();
                     }
-                    playMode = displayMode;
                 }
                 break;
         }
