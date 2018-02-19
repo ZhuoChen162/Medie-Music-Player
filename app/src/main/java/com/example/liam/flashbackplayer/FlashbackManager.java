@@ -73,7 +73,8 @@ public class FlashbackManager {
                 theSong.increaseRanking();
 
             //store the songs into PQ
-            if (theSong.getPreference() != Song.DISLIKE) {
+            if (theSong.getPreference() == Song.FAVORITE ||
+                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)){
                 this.rankings.add(theSong);
             }
         }

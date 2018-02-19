@@ -188,8 +188,24 @@ public class UITests {
         assertEquals(main.getResources().getDrawable(R.drawable.ic_delete).getConstantState(), favicoView.getDrawable().getConstantState());
         favico.perform(click());
         assertEquals(main.getResources().getDrawable(R.drawable.ic_add).getConstantState(), favicoView.getDrawable().getConstantState());
+    }
 
+    @Test
+    public void story5Test() {
+        MainActivity main = mActivityTestRule.getActivity();
+        ListView listView = main.findViewById(R.id.songDisplay);
+        View childView = listView.getChildAt(0);
+        ImageView favicoView = (ImageView) childView.findViewById(R.id.pref);
+        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
+        favico.check(matches(isDisplayed()));
+        main.masterList.get(0).setPreference(Song.FAVORITE);
 
+        //simulating touching flashback button
+        ViewInteraction flashbackButton = onView(withId(R.id.buttonFlashBack));
+        flashbackButton.perform(click());
+
+        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        twoLineListItem2.check(matches(isDisplayed()));
     }
 
     private static Matcher<View> childAtPosition(
