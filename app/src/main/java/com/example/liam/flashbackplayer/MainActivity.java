@@ -200,13 +200,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        history = prefs.getHistory("history");
-        historyTime = prefs.getHistoryTime("historyTime");
-        if (history == null) {
-            history = new ArrayList<>(50);
-            historyTime = new ArrayList<>(50);
-        }
     }
 
     /**
@@ -412,6 +405,14 @@ public class MainActivity extends AppCompatActivity {
         masterList = new ArrayList<Song>();
         for (Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
+        }
+
+
+        history = prefs.getHistory("history");
+        historyTime = prefs.getHistoryTime("historyTime");
+        if (history == null) {
+            history = new ArrayList<>(50);
+            historyTime = new ArrayList<>(50);
         }
 
         if(displayMode == MODE_FLASHBACK) {

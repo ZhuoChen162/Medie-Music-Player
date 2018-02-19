@@ -17,13 +17,6 @@ import static org.junit.Assert.assertEquals;
 
 public class FlashbackTests {
     @Rule
-    /*public ActivityTestRule<MainActivity> mainAct = new ActivityTestRule<MainActivity>(MainActivity.class) {
-        @Override
-        protected void beforeActivityLaunched() {
-            clearSharedPrefs(InstrumentationRegistry.getTargetContext());
-            super.beforeActivityLaunched();
-        }
-    };*/
     public ActivityTestRule<MainActivity> mainAct = new ActivityTestRule<MainActivity>(MainActivity.class);
 
     @Rule
@@ -160,12 +153,5 @@ public class FlashbackTests {
         Song popped = pq.poll();
         assertEquals(1, pq.size());
         assertEquals(1, popped.getDay()[1]);
-    }
-
-    private void clearSharedPrefs(Context context) {
-        SharedPreferences prefs = mainAct.getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }
