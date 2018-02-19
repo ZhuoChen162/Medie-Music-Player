@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -162,8 +163,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 prevMode = displayMode;
                 if (playMode != MODE_FLASHBACK) {
-                    flashbackList = new ArrayList<>();
-
+                    flashbackList.clear();
                     GPSTracker gps = new GPSTracker(v.getContext());
 
                     //update curr loc and time to implement the ranking algorihtm
@@ -383,6 +383,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initAndLoad() {
+        flashbackList = new ArrayList<>();
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
         }
@@ -522,10 +523,10 @@ public class MainActivity extends AppCompatActivity {
                 });
                 if (playMode != displayMode) {
                     currSong = 0;
-                    if (flashbackList.get(currSong).getPreference() == Song.DISLIKE) {
-                        skipSong(1);
-                    } else {
+                    if (flashbackList.size() != 0) {
                         playSong(flashbackList.get(currSong));
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No memory yet, please play some songs", Toast.LENGTH_SHORT).show();
                     }
                     playMode = displayMode;
                 }
