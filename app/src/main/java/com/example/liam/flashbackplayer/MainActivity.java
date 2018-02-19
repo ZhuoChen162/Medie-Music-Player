@@ -1,6 +1,7 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -187,8 +188,11 @@ public class MainActivity extends AppCompatActivity {
                     PriorityQueue<Song> pq = fbm.getRankList();
 
                     //add songs in pq into the flashbackList
-                    while (!pq.isEmpty()) {
-                        flashbackList.add(pq.poll());
+                    while(!pq.isEmpty()) {
+                        if(!flashbackList.contains(pq.peek())) {
+                            flashbackList.add(pq.poll());
+                            break;
+                        }
                     }
 
                     //update UI
@@ -201,12 +205,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        history = prefs.getHistory("history");
-        historyTime = prefs.getHistoryTime("historyTime");
-        if (history == null) {
-            history = new ArrayList<>(50);
-            historyTime = new ArrayList<>(50);
-        }
     }
 
     /**
@@ -414,13 +412,20 @@ public class MainActivity extends AppCompatActivity {
             masterList.addAll(toAdd.getSongList());
         }
 
+        history = prefs.getHistory("history");
+        historyTime = prefs.getHistoryTime("historyTime");
+        if (history == null) {
+            history = new ArrayList<>(50);
+            historyTime = new ArrayList<>(50);
+        }
+
         if(displayMode == MODE_FLASHBACK) {
             GPSTracker gps = new GPSTracker(this);
             updateLocAndTime(gps, Calendar.getInstance());
             FlashbackManager fbm = new FlashbackManager(latitude, longitude, dayOfWeek, hour);
             fbm.rankSongs(masterList);
             PriorityQueue<Song> pq = fbm.getRankList();
-            while (!pq.isEmpty()) {
+            if (!pq.isEmpty()) {
                 flashbackList.add(pq.poll());
             }
         }
@@ -648,6 +653,21 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (playMode == MODE_FLASHBACK) {
                     Log.i("SONG DONE", flashbackList.get(currSong).getName());
+                    GPSTracker gps = new GPSTracker(MainActivity.this);
+
+                    //update curr loc and time to implement the ranking algorihtm
+                    updateLocAndTime(gps, Calendar.getInstance());
+                    FlashbackManager fbm = new FlashbackManager(latitude, longitude, dayOfWeek, hour);
+                    fbm.rankSongs(masterList);
+                    PriorityQueue<Song> pq = fbm.getRankList();
+
+                    //add songs in pq into the flashbackList
+                    while(!pq.isEmpty()) {
+                        if(!flashbackList.contains(pq.peek())) {
+                            flashbackList.add(pq.poll());
+                            break;
+                        }
+                    }
                     skipSong(1);
                 }
 
