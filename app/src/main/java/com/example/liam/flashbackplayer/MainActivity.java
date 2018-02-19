@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -751,7 +752,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void viewHistory() {
-        ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, history) {
+        ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, history) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -780,6 +781,6 @@ public class MainActivity extends AppCompatActivity {
             historyTime.remove(49);
         }
         history.add(0, curSong);
-        historyTime.add(0, calendar.getTime().toString());
+        historyTime.add(0, DateFormat.format("yyyy-MM-dd hh:mm:ss", calendar).toString());
     }
 }
