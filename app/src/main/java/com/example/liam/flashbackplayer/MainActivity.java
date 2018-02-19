@@ -2,6 +2,8 @@ package com.example.liam.flashbackplayer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -129,38 +131,50 @@ public class MainActivity extends AppCompatActivity {
         progressBarInit();
         volumeBarInit();
 
+        final Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
+        final Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
+        final Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
+        final Button viewHistory = (Button) findViewById(R.id.btn_view_history);
         // listener for button playing by songs in alphabetic order
-        Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
         sortByName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sortByAlbum.getBackground().clearColorFilter();
+                playFlashBack.getBackground().clearColorFilter();
+                viewHistory.getBackground().clearColorFilter();
                 displayMode = MODE_SONG;
                 populateUI(displayMode);
             }
         });
 
-        Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
         sortByAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sortByName.getBackground().clearColorFilter();
+                playFlashBack.getBackground().clearColorFilter();
+                viewHistory.getBackground().clearColorFilter();
                 displayMode = MODE_ALBUM;
                 populateUI(displayMode);
             }
         });
 
-        Button viewHistory = (Button) findViewById(R.id.btn_view_history);
         viewHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sortByName.getBackground().clearColorFilter();
+                sortByAlbum.getBackground().clearColorFilter();
+                playFlashBack.getBackground().clearColorFilter();
                 viewHistory();
             }
         });
 
         // listener for button playing by flashback         ZHAOKAI XU
-        Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
         playFlashBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sortByName.getBackground().clearColorFilter();
+                sortByAlbum.getBackground().clearColorFilter();
+                viewHistory.getBackground().clearColorFilter();
                 prevMode = displayMode;
                 if (playMode != MODE_FLASHBACK) {
                     flashbackList.clear();
@@ -399,6 +413,17 @@ public class MainActivity extends AppCompatActivity {
         for (Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
         }
+
+        if(displayMode == MODE_FLASHBACK) {
+            GPSTracker gps = new GPSTracker(this);
+            updateLocAndTime(gps, Calendar.getInstance());
+            FlashbackManager fbm = new FlashbackManager(latitude, longitude, dayOfWeek, hour);
+            fbm.rankSongs(masterList);
+            PriorityQueue<Song> pq = fbm.getRankList();
+            while (!pq.isEmpty()) {
+                flashbackList.add(pq.poll());
+            }
+        }
         populateUI(displayMode);
 
     }
@@ -414,6 +439,8 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         switch (mode) {
             case (MODE_SONG):
+                Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
+                sortByName.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 //Sort the songs alphabetically
                 Collections.sort(masterList);
 
@@ -458,6 +485,8 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case (MODE_ALBUM):
+                Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
+                sortByAlbum.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 playMode = displayMode;
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(albumMap.values());
@@ -487,6 +516,8 @@ public class MainActivity extends AppCompatActivity {
                 });
                 break;
             case (MODE_FLASHBACK):
+                Button flashbackBtn = (Button) findViewById(R.id.buttonFlashBack);
+                flashbackBtn.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(this, R.layout.song_list, android.R.id.text1, flashbackList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
@@ -525,10 +556,10 @@ public class MainActivity extends AppCompatActivity {
                     currSong = 0;
                     if (flashbackList.size() != 0) {
                         playSong(flashbackList.get(currSong));
+                        playMode = displayMode;
                     } else {
-                        Toast.makeText(getApplicationContext(), "No memory yet, please play some songs", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "No song history yet. Play or favorite songs to get started!", Toast.LENGTH_LONG).show();
                     }
-                    playMode = displayMode;
                 }
                 break;
         }
@@ -753,6 +784,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void viewHistory() {
+        Button historyBtn = (Button) findViewById(R.id.btn_view_history);
+        historyBtn.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, history) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {

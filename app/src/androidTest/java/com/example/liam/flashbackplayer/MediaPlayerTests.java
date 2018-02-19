@@ -2,11 +2,14 @@ package com.example.liam.flashbackplayer;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.MediaMetadataRetriever;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
+import android.view.View;
 import android.widget.Button;
 
 import org.junit.Before;
@@ -81,14 +84,9 @@ public class MediaPlayerTests {
         DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
         twoLineListItem2.perform(click());
 
-        //check if seekbar status matches song time status (to the nearest second) on initial play and then after 2.5 seconds
+        //check if seekbar status matches song time status (to the nearest second) on initial play
         assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
-        try {
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        assertEquals(main.progressSeekBar.getProgress()/1000, main.mediaPlayer.getCurrentPosition()/1000);
+
 
         //check to see if seeking to arbitrary point in the song (10 seconds) breaks seekbar
         main.mediaPlayer.seekTo(10000);
@@ -128,4 +126,49 @@ public class MediaPlayerTests {
         main.masterList.get(1).setPreference(Song.NEUTRAL);
 
     }
+
+    @Test
+    public void flashbackTest() {
+        MainActivity main = mainAct.getActivity();
+        ViewInteraction fbBtn = onView(withId(R.id.buttonFlashBack));
+
+        //favorite 3 songs to make sure that at least 3 songs will exist in FB mode on start
+        main.masterList.get(0).setPreference(Song.FAVORITE);
+        main.masterList.get(1).setPreference(Song.FAVORITE);
+        main.masterList.get(2).setPreference(Song.FAVORITE);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        fbBtn.perform(click());
+
+        //test to make sure autoplay works
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(true, main.mediaPlayer.isPlaying());
+
+        //test active dislike skipping in fb mode
+        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
+        favico.perform(click());
+        assertEquals(false, main.currSong == 0);
+
+        //test pausing, skipping
+        ViewInteraction pausePlay = onView(withId(R.id.buttonPlay));
+        ViewInteraction skipForward = onView(withId(R.id.skipForward));
+        ViewInteraction skipBack = onView(withId(R.id.skipBack));
+
+        pausePlay.perform(click());
+        assertEquals(false, main.mediaPlayer.isPlaying());
+        int current = main.currSong;
+        skipForward.perform(click());
+        assertEquals(current + 1, main.currSong);
+        skipBack.perform(click());
+        assertEquals(current, main.currSong);
+
+    }
+
 }
