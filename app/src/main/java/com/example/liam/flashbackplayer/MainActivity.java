@@ -766,6 +766,12 @@ public class MainActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.songDisplay);
         listView.setAdapter(songArrayAdapter);
         listView.setSelection(0);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //do nothing when clicked; user should not be able to manually choose song in flashback mode
+            }
+        });
     }
 
     private void addToHistory(Song curSong, Calendar calendar) {
