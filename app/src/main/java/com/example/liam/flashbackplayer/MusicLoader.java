@@ -1,7 +1,6 @@
 package com.example.liam.flashbackplayer;
 
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.os.Environment;
 import android.util.Log;
 
@@ -133,14 +132,14 @@ public class MusicLoader {
             if (albumMap.containsKey(albumName)) {
                 Album toEdit = albumMap.get(albumName);
                 if (!toEdit.contains(songName)) {
-                    Song newSong = new Song(songName, song.getPath(), artist,
+                    Song newSong = new LocalSong(songName, song.getPath(), artist,
                             trueLength, albumName);
                     toEdit.addSong(newSong);
                     albumMap.put(albumName, toEdit);
                 }
             } else {
                 Album toAdd = new Album(albumName);
-                Song newSong = new Song(songName, song.getPath(), artist, trueLength, albumName);
+                Song newSong = new LocalSong(songName, song.getPath(), artist, trueLength, albumName);
                 toAdd.addSong(newSong);
                 albumMap.put(albumName, toAdd);
             }
