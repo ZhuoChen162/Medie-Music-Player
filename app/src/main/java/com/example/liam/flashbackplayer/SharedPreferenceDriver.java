@@ -1,8 +1,10 @@
 package com.example.liam.flashbackplayer;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
@@ -41,18 +43,15 @@ public class SharedPreferenceDriver {
         prefsEditor.apply();
     }
 
-    /**
-     * Return the file array when call this function
-     *
-     * @param id of the file that wanted
-     * @return file array with the given id
-     */
-    public File[] getFileArr(String id) {
-        Gson gson = new Gson();
-        String json = prefs.getString(id, "");
-        Type fileType = new TypeToken<File[]>() {
-        }.getType();
-        return gson.fromJson(json, fileType);
+
+    public void saveObjectWithSongs(Object toSave, String id) {
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
+                .create();
+        String json = gson.toJson(toSave);
+        Log.i("JSON", json);
+        prefsEditor.putString(id, json);
+        prefsEditor.apply();
     }
 
     /**
@@ -62,17 +61,21 @@ public class SharedPreferenceDriver {
      * @return hashmap of the album map
      */
     public HashMap<String, Album> getAlbumMap(String id) {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
+                .create();
         String json = prefs.getString(id, "");
+        Log.i("JSON BACK", json);
         Type alistType = new TypeToken<HashMap<String, Album>>() {
         }.getType();
         return gson.fromJson(json, alistType);
     }
 
-    public ArrayList<Song> getHistory(String id) {
-        Gson gson = new Gson();
+    public ArrayList<History> getHistory(String id) {
+        Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
+                .create();
         String json = prefs.getString(id, "");
-        Type alistType = new TypeToken<ArrayList<Song>>() {
+        Log.i("JSON BACK", json);
+        Type alistType = new TypeToken<ArrayList<History>>() {
         }.getType();
         return gson.fromJson(json, alistType);
     }

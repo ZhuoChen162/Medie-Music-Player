@@ -22,10 +22,6 @@ public class MusicController {
         this.activity = activity;
     }
 
-    public boolean isNull() {
-        return this.mediaPlayer == null;
-    }
-
     public void release() {
         if(!this.isNull()) {
             this.mediaPlayer.release();
@@ -51,6 +47,7 @@ public class MusicController {
         }
 
         appMediator.startPlay(toPlay);
+        appMediator.updateSeekBar(mediaPlayer.getDuration());
     }
 
     /**
@@ -118,5 +115,25 @@ public class MusicController {
 
     public void setAppMediator(AppMediator mediator) {
         this.appMediator = mediator;
+    }
+
+    public boolean isNull() {
+        return this.mediaPlayer == null;
+    }
+
+    public boolean isPlaying() {
+        return this.mediaPlayer.isPlaying();
+    }
+
+    public int getCurrentPosition() {
+        return this.mediaPlayer.getCurrentPosition();
+    }
+
+    public void setVolume(int i) {
+        this.mediaPlayer.setVolume(i / 100f, i / 100f);
+    }
+
+    public void seekTo(int i) {
+        this.mediaPlayer.seekTo(i);
     }
 }

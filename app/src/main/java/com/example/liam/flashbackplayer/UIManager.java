@@ -1,8 +1,10 @@
 package com.example.liam.flashbackplayer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -10,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -20,9 +23,15 @@ public class UIManager {
     private boolean isAlbumExpanded;
     private int displayMode;
     private AppMediator appMediator;
+    private final Handler seekBarHandler = new Handler();
+    protected SeekBar progressSeekBar;
+    private SeekBar volumeControl;
+    private int duration;
+    private boolean isActive;
 
     public UIManager(Activity activity) {
         this.activity = activity;
+        this.isActive = true;
         Button skipBack = (
                 Button) activity.findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
@@ -38,6 +47,9 @@ public class UIManager {
                 appMediator.shouldSkip(1);
             }
         });
+
+        progressBarInit();
+        volumeBarInit();
     }
 
     public void populateUI(final int mode) {
@@ -222,6 +234,107 @@ public class UIManager {
         currentLocation.setText("Location: " + loc);
     }
 
+    /**
+     * This method is the build the song prograss bar that allow to speed up to some certain points
+     */
+    private void progressBarInit() {
+        progressSeekBar = activity.findViewById(R.id.player_seekbar);
+        progressSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seek, int i, boolean b) {
+                if (b && !appMediator.nullPlayer()) {
+                    appMediator.seekTo(i);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        final TextView progressTime = activity.findViewById(R.id.cur_progress_time);
+        final TextView leftTime = activity.findViewById(R.id.cur_left_time);
+
+        final Runnable seekBarUpdate = new Runnable() {
+            public void run() {
+                if (isActive && appMediator.canSeek()) {
+                    int curProgress = appMediator.getCurrentPosition();
+                    progressSeekBar.setProgress(curProgress);
+                    progressTime.setText(milliSecToTime(curProgress, true));
+                    leftTime.setText(milliSecToTime(duration - curProgress, false));
+                }
+                seekBarHandler.postDelayed(this, 1000);
+            }
+        };
+        seekBarHandler.postDelayed(seekBarUpdate, 1000);
+    }
+
+    /**
+     * function that translate the time from millsec to time string
+     *
+     * @param milliSec time that want to translate
+     * @param positive true if want to translate
+     * @return the string of the time
+     */
+    private String milliSecToTime(int milliSec, boolean positive) {
+        String time = "";
+        String strSeconds = "";
+
+        int minutes = (milliSec % (1000 * 60 * 60)) / (1000 * 60);
+        int seconds = ((milliSec % (1000 * 60 * 60)) % (1000 * 60) / 1000);
+
+        if (seconds < 10) {
+            strSeconds = "0" + seconds;
+        } else {
+            strSeconds = "" + seconds;
+        }
+
+        time = minutes + ":" + strSeconds;
+        if (!positive) {
+            time = "-" + time;
+        }
+        return time;
+    }
+
+    /**
+     * This is the method that build the volume bar and allow to change the volume inside the
+     * songs
+     */
+    private void volumeBarInit() {
+        final SharedPreferenceDriver volumeMem = new SharedPreferenceDriver(activity.getPreferences(Context.MODE_PRIVATE));
+        int lastVolume = volumeMem.getVolume();
+
+        volumeControl = activity.findViewById(R.id.player_volume);
+        if (lastVolume < 0) {
+            volumeControl.setProgress(50);
+        } else {
+            volumeControl.setProgress(lastVolume);
+        }
+
+        volumeControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (b && !appMediator.nullPlayer()) {
+                    appMediator.setVolume(i);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                volumeMem.saveVolume(seekBar.getProgress());
+            }
+        });
+    }
+
     public void setAppMediator(AppMediator mediator) {
         this.appMediator = mediator;
     }
@@ -232,5 +345,13 @@ public class UIManager {
 
     public void setIsAlbumExpanded(boolean isAlbumExpanded) {
         this.isAlbumExpanded = isAlbumExpanded;
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }

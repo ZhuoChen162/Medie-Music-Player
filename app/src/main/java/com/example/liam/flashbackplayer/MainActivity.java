@@ -53,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
     protected static ArrayList<Song> masterList;
     protected static ArrayList<Song> perAlbumList;
     protected static ArrayList<Song> flashbackList;
-    protected static ArrayList<Song> history;
-    protected static ArrayList<String> historyTime;
+    protected static ArrayList<History> history;
 
     protected MediaPlayer mediaPlayer;
     protected SeekBar progressSeekBar;
@@ -66,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     protected final Handler seekBarHandler = new Handler();
 
-    private int skipActive;
     protected int currSong;
     protected int playMode;
     protected int displayMode;
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     //for update loc and time
     private FlashbackManager flashbackManager = new FlashbackManager(this);
     private UIManager uiManager;
+    private AppMediator appMediator;
 
     /**
      * Override the oncreate method to handle the basic button function such as
@@ -104,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        progressBarInit();
-        volumeBarInit();
+        //progressBarInit();
+        //volumeBarInit();
 
         final Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
         final Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
@@ -187,18 +186,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (this.prefs != null) {
-            if (this.albumMap != null) {
-                prefs.saveObject(albumMap, "album map");
+            if (albumMap != null) {
+                prefs.saveObjectWithSongs(albumMap, "album map");
             }
-            if (this.history != null) {
-                prefs.saveObject(history, "history");
-            }
-            if (this.historyTime != null) {
-                prefs.saveObject(historyTime, "historyTime");
+            if (history != null) {
+                prefs.saveObjectWithSongs(history, "history");
             }
             prefs.saveInt(displayMode, "mode");
         }
-        isActive = false;
+        if(uiManager != null) {
+            uiManager.setIsActive(false);
+        }
     }
 
     /**
@@ -207,7 +205,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        isActive = true;
+        if(uiManager != null) {
+            uiManager.setIsActive(true);
+        }
     }
 
     /**
@@ -216,9 +216,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-        }
+        appMediator.release();
     }
 
     /**
@@ -237,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This method is the build the song prograss bar that allow to speed up to some certain points
      */
+    /*
     private void progressBarInit() {
         progressSeekBar = findViewById(R.id.player_seekbar);
         progressSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -272,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
         };
         seekBarHandler.postDelayed(seekBarUpdate, 1000);
     }
+    */
 
     /**
      * function that translate the time from millsec to time string
@@ -280,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
      * @param positive true if want to translate
      * @return the string of the time
      */
+    /*
     private String milliSecToTime(int milliSec, boolean positive) {
         String time = "";
         String strSeconds = "";
@@ -299,11 +300,13 @@ public class MainActivity extends AppCompatActivity {
         }
         return time;
     }
+    */
 
     /**
      * This is the method that build the volume bar and allow to change the volume inside the
      * songs
      */
+    /*
     private void volumeBarInit() {
         final SharedPreferenceDriver volumeMem = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
         int lastVolume = volumeMem.getVolume();
@@ -334,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    */
 
     /**
      * Give the permission check for the pass in things
@@ -386,13 +390,11 @@ public class MainActivity extends AppCompatActivity {
         }
         MusicController musicController = new MusicController(mediaPlayer, this);
         uiManager  = new UIManager(this);
-        AppMediator mediator = new AppMediator(flashbackManager, musicController, uiManager, this);
+        appMediator = new AppMediator(flashbackManager, musicController, uiManager, this);
 
         history = prefs.getHistory("history");
-        historyTime = prefs.getHistoryTime("historyTime");
         if (history == null) {
-            history = new ArrayList<>(50);
-            historyTime = new ArrayList<>(50);
+            history = new ArrayList<History>();
         }
 
         if(displayMode == MODE_FLASHBACK) {
@@ -719,15 +721,16 @@ public class MainActivity extends AppCompatActivity {
     private void viewHistory() {
         Button historyBtn = (Button) findViewById(R.id.btn_view_history);
         historyBtn.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-        ArrayAdapter<Song> songArrayAdapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_2, android.R.id.text1, history) {
+        ArrayAdapter<History> songArrayAdapter = new ArrayAdapter<History>(this, android.R.layout.simple_list_item_2, android.R.id.text1, history) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-
-                text1.setText(history.get(position).getName());
-                text2.setText(historyTime.get(position));
+                if(history.get(position).getSong() != null) {
+                    text1.setText(history.get(position).getSong().getName());
+                }
+                text2.setText(history.get(position).getTime());
                 return view;
             }
         };
@@ -742,12 +745,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    protected static void addToHistory(Song curSong, Calendar calendar) {
+    protected static void addToHistory(Song currSong, Calendar calendar) {
         if (history.size() > 49) {
             history.remove(49);
-            historyTime.remove(49);
         }
-        history.add(0, curSong);
-        historyTime.add(0, DateFormat.format("yyyy-MM-dd hh:mm:ss", calendar).toString());
+        History toAdd = new History(currSong, DateFormat.format("yyyy-MM-dd hh:mm:ss", calendar).toString());
+        history.add(0, toAdd);
     }
 }

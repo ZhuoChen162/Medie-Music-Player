@@ -120,7 +120,36 @@ public class AppMediator {
         MainActivity.addToHistory(playing, Calendar.getInstance());
     }
 
+    public void updateSeekBar(int duration) {
+        uiManager.progressSeekBar.setMax(duration);
+        uiManager.setDuration(duration);
+    }
+
     public void shouldSkip(int direction) {
         musicController.skipSong(direction);
+    }
+
+    public boolean canSeek() {
+        return(!musicController.isNull() && musicController.isPlaying());
+    }
+
+    public int getCurrentPosition() {
+        return musicController.getCurrentPosition();
+    }
+
+    public boolean nullPlayer() {
+        return musicController.isNull();
+    }
+
+    public void setVolume(int i) {
+        musicController.setVolume(i);
+    }
+
+    public void seekTo(int i) {
+        musicController.seekTo(i);
+    }
+
+    public void release() {
+        musicController.release();
     }
 }

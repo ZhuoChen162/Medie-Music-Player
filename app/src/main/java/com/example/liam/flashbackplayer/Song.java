@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 
 
-interface Song extends Comparable {
+public interface Song extends Comparable {
     // initialize the preference to neutural
     int DISLIKE = 1;
     int NEUTRAL = 0;
