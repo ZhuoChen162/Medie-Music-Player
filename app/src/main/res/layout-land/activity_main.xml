@@ -85,10 +85,10 @@
         android:text="Album"
         android:textColor="@color/colorAccent"
         app:layout_constraintBaseline_toBaselineOf="@+id/buttonSongs"
-        app:layout_constraintEnd_toStartOf="@+id/buttonFlashBack" />
+        app:layout_constraintEnd_toStartOf="@+id/btnFlashback" />
 
     <Button
-        android:id="@+id/buttonFlashBack"
+        android:id="@+id/btnFlashback"
         android:layout_width="111dp"
         android:layout_height="54dp"
         android:layout_marginEnd="16dp"

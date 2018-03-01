@@ -36,7 +36,6 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
@@ -88,7 +87,7 @@ public class UITests {
         ViewInteraction button5 = onView(withId(R.id.btn_sortby_album));
         button5.check(matches(isDisplayed()));
 
-        ViewInteraction button6 = onView(withId(R.id.buttonFlashBack));
+        ViewInteraction button6 = onView(withId(R.id.btnFlashback));
         button6.check(matches(isDisplayed()));
 
         ListView listView = (ListView) mActivityTestRule.getActivity().findViewById(R.id.songDisplay);
@@ -208,7 +207,7 @@ public class UITests {
         main.masterList.get(0).setPreference(Song.FAVORITE);
 
         //simulating touching flashback button
-        ViewInteraction flashbackButton = onView(withId(R.id.buttonFlashBack));
+        ViewInteraction flashbackButton = onView(withId(R.id.btnFlashback));
         flashbackButton.perform(click());
 
         DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);

@@ -1,22 +1,14 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.media.MediaMetadataRetriever;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
-import android.view.View;
-import android.widget.Button;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.HashMap;
 
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
@@ -133,7 +125,7 @@ public class MediaPlayerTests {
     @Test
     public void flashbackTest() {
         MainActivity main = mainAct.getActivity();
-        ViewInteraction fbBtn = onView(withId(R.id.buttonFlashBack));
+        ViewInteraction fbBtn = onView(withId(R.id.btnFlashback));
 
         //favorite 3 songs to make sure that at least 3 songs will exist in FB mode on start
         main.masterList.get(0).setPreference(Song.FAVORITE);
