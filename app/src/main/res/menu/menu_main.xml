@@ -19,15 +19,25 @@
         <menu>
             <group android:checkableBehavior="single">
                 <item
-                    android:id="@+id/btn_sortby_name"
+                    android:id="@+id/btn_sortby_title"
                     android:checked="true"
                     android:orderInCategory="1"
-                    android:title="Names"/>
+                    android:title="Names" />
 
                 <item
                     android:id="@+id/btn_sortby_album"
                     android:orderInCategory="2"
-                    android:title="Albums"/>
+                    android:title="Albums" />
+
+                <item
+                    android:id="@+id/btn_sortby_artist"
+                    android:orderInCategory="3"
+                    android:title="Artist" />
+
+                <item
+                    android:id="@+id/btn_sortby_fav"
+                    android:orderInCategory="4"
+                    android:title="Fav" />
             </group>
         </menu>
     </item>

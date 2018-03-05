@@ -87,50 +87,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button sortByName = (Button) findViewById(R.id.btn_sortby_name);
-        final Button sortByAlbum = (Button) findViewById(R.id.btn_sortby_album);
-        final Button playFlashBack = (Button) findViewById(R.id.buttonFlashBack);
-        final Button viewHistory = (Button) findViewById(R.id.btn_view_history);
+        final Button playerMode = (Button) findViewById(R.id.btnPlayer);
+        final Button flashbackMode = (Button) findViewById(R.id.btnFlashback);
         // listener for button playing by songs in alphabetic order
-        sortByName.setOnClickListener(new View.OnClickListener() {
+        playerMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortByAlbum.getBackground().clearColorFilter();
-                playFlashBack.getBackground().clearColorFilter();
-                viewHistory.getBackground().clearColorFilter();
+                flashbackMode.getBackground().clearColorFilter();
+                playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 displayMode = MODE_SONG;
                 uiManager.populateUI(displayMode);
             }
         });
 
-        sortByAlbum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sortByName.getBackground().clearColorFilter();
-                playFlashBack.getBackground().clearColorFilter();
-                viewHistory.getBackground().clearColorFilter();
-                displayMode = MODE_ALBUM;
-                uiManager.populateUI(displayMode);
-            }
-        });
-
-        viewHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sortByName.getBackground().clearColorFilter();
-                sortByAlbum.getBackground().clearColorFilter();
-                playFlashBack.getBackground().clearColorFilter();
-                viewHistory();
-            }
-        });
-
         // listener for button playing by flashback         ZHAOKAI XU
-        playFlashBack.setOnClickListener(new View.OnClickListener() {
+        flashbackMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sortByName.getBackground().clearColorFilter();
-                sortByAlbum.getBackground().clearColorFilter();
-                viewHistory.getBackground().clearColorFilter();
+                playerMode.getBackground().clearColorFilter();
+                flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+                prevMode = displayMode;
                 if (playMode != MODE_FLASHBACK) {
                     flashbackList.clear();
                     GPSTracker gps = new GPSTracker(v.getContext());
@@ -158,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // The player starts at player mode, so set the button color to gray
+        playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
     }
 
     /**
@@ -272,6 +250,12 @@ public class MainActivity extends AppCompatActivity {
             history = new ArrayList<History>();
         }
 
+
+        history = prefs.getHistory("history");
+        if (history == null) {
+            history = new ArrayList<>();
+        }
+
         if(displayMode == MODE_FLASHBACK) {
             GPSTracker gps = new GPSTracker(this);
             flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
@@ -318,5 +302,45 @@ public class MainActivity extends AppCompatActivity {
         }
         History toAdd = new History(currSong, DateFormat.format("yyyy-MM-dd hh:mm:ss", calendar).toString());
         history.add(0, toAdd);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        // Handle item selection
+        switch (itemId) {
+            case R.id.btn_history:
+                viewHistory();
+                ((Button) findViewById(R.id.btnPlayer)).getBackground().clearColorFilter();
+                ((Button) findViewById(R.id.btnFlashback)).getBackground().clearColorFilter();
+                return true;
+            case R.id.btn_sortby_title:
+                item.setChecked(true);
+                displayMode = MODE_SONG;
+                populateUI(displayMode);
+                return true;
+            case R.id.btn_sortby_album:
+                item.setChecked(true);
+                displayMode = MODE_ALBUM;
+                populateUI(displayMode);
+                return true;
+            case R.id.btn_sortby_artist:
+                item.setChecked(true);
+                return true;
+            case R.id.btn_sortby_fav:
+                item.setChecked(true);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

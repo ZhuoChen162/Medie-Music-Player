@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Adapter;
 import android.widget.ListView;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,6 +29,12 @@ public class MiscTests {
     public GrantPermissionRule permissionRule2 = GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
     @Rule
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    @Before
+    public void ensureSongMode() {
+        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
+        songBtn.perform(click());
+    }
 
     @Test
     public void trackListSortedTest() {
