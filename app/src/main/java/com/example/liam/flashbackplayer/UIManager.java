@@ -58,8 +58,6 @@ public class UIManager {
         ListView listView = (ListView) activity.findViewById(R.id.songDisplay);
         switch (mode) {
             case (MainActivity.MODE_SONG):
-                Button sortByName = (Button) activity.findViewById(R.id.btn_sortby_name);
-                sortByName.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 //Sort the songs alphabetically
                 Collections.sort(MainActivity.masterList);
 
@@ -98,8 +96,6 @@ public class UIManager {
                 });
                 break;
             case (MainActivity.MODE_ALBUM):
-                Button sortByAlbum = (Button) activity.findViewById(R.id.btn_sortby_album);
-                sortByAlbum.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(MainActivity.albumMap.values());
                 //sort the albums in order
@@ -128,8 +124,6 @@ public class UIManager {
                 });
                 break;
             case (MainActivity.MODE_FLASHBACK):
-                Button flashbackBtn = (Button) activity.findViewById(R.id.buttonFlashBack);
-                flashbackBtn.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {

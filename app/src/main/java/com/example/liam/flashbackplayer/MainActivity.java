@@ -12,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -49,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
     protected SharedPreferenceDriver prefs;
     protected boolean isAlbumExpanded;
 
-
     protected int currSong;
     protected int playMode;
+    protected int prevMode;
     protected int displayMode;
 
     //for update loc and time
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 flashbackMode.getBackground().clearColorFilter();
                 playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-                displayMode = MODE_SONG;
+                displayMode = prevMode;
                 uiManager.populateUI(displayMode);
             }
         });
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 playerMode.getBackground().clearColorFilter();
                 flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 prevMode = displayMode;
-                if (playMode != MODE_FLASHBACK) {
+                if (appMediator.getPlayMode() != MODE_FLASHBACK) {
                     flashbackList.clear();
                     GPSTracker gps = new GPSTracker(v.getContext());
 
@@ -270,8 +272,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void viewHistory() {
-        Button historyBtn = (Button) findViewById(R.id.btn_view_history);
-        historyBtn.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         ArrayAdapter<History> songArrayAdapter = new ArrayAdapter<History>(this, android.R.layout.simple_list_item_2, android.R.id.text1, history) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -319,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle item selection
         switch (itemId) {
             case R.id.btn_history:
+                prevMode = displayMode;
                 viewHistory();
                 ((Button) findViewById(R.id.btnPlayer)).getBackground().clearColorFilter();
                 ((Button) findViewById(R.id.btnFlashback)).getBackground().clearColorFilter();
@@ -326,12 +327,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btn_sortby_title:
                 item.setChecked(true);
                 displayMode = MODE_SONG;
-                populateUI(displayMode);
+                uiManager.populateUI(displayMode);
                 return true;
             case R.id.btn_sortby_album:
                 item.setChecked(true);
                 displayMode = MODE_ALBUM;
-                populateUI(displayMode);
+                uiManager.populateUI(displayMode);
                 return true;
             case R.id.btn_sortby_artist:
                 item.setChecked(true);

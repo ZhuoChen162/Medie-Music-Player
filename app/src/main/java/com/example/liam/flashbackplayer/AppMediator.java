@@ -152,4 +152,8 @@ public class AppMediator {
     public void release() {
         musicController.release();
     }
+
+    public int getPlayMode() {
+        return this.musicController.getPlayMode();
+    }
 }
