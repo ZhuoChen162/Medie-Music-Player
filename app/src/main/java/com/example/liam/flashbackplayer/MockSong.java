@@ -1,7 +1,5 @@
 package com.example.liam.flashbackplayer;
 
-import android.location.Location;
-
 import java.util.ArrayList;
 
 /**
@@ -10,7 +8,7 @@ import java.util.ArrayList;
  * this is a mock obj for testing the data structure
  */
 
-public class MockSong extends Song{
+public class MockSong extends LocalSong {
 
     private ArrayList<SongLocation> songLocation;
     private int preference;
