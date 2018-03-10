@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
     public static final int MODE_HISTORY = 3;
+    //added modes for display by artist and display by Favorites
+    public static final int MODE_ARTIST = 4;
+    public static final int MODE_FAVORITE = 5;
+
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
 
@@ -324,22 +328,35 @@ public class MainActivity extends AppCompatActivity {
                 ((Button) findViewById(R.id.btnPlayer)).getBackground().clearColorFilter();
                 ((Button) findViewById(R.id.btnFlashback)).getBackground().clearColorFilter();
                 return true;
+
+            //display sorted by title
             case R.id.btn_sortby_title:
                 item.setChecked(true);
                 displayMode = MODE_SONG;
                 uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by album
             case R.id.btn_sortby_album:
                 item.setChecked(true);
                 displayMode = MODE_ALBUM;
                 uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by artiest
             case R.id.btn_sortby_artist:
                 item.setChecked(true);
+                displayMode = MODE_ARTIST;
+                uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by favorite
             case R.id.btn_sortby_fav:
                 item.setChecked(true);
+                displayMode = MODE_FAVORITE;
+                uiManager.populateUI(displayMode);
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
