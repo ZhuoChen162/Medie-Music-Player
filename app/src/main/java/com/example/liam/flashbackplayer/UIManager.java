@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 public class UIManager {
     private Activity activity;
@@ -59,6 +60,7 @@ public class UIManager {
         isAlbumExpanded = false;
         ListView listView = (ListView) activity.findViewById(R.id.songDisplay);
         switch (mode) {
+
             case (MainActivity.MODE_SONG):
                 //Sort the songs alphabetically
                 Collections.sort(MainActivity.masterList);
@@ -97,13 +99,15 @@ public class UIManager {
                     }
                 });
                 break;
+
+
             case (MainActivity.MODE_ALBUM):
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(MainActivity.albumMap.values());
                 //sort the albums in order
                 Collections.sort(albums);
 
-                ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(activity, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
+                ArrayAdapter<Album> adapter1 = new ArrayAdapter<Album>(activity, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         View view = super.getView(position, convertView, parent);
@@ -115,7 +119,7 @@ public class UIManager {
                         return view;
                     }
                 };
-                listView.setAdapter(adapter2);
+                listView.setAdapter(adapter1);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -128,11 +132,12 @@ public class UIManager {
 
             //added favorite mode and artist mode done by Jackie
             case (MainActivity.MODE_ARTIST):
+
                 //Sort the songs by artists name alphabetically
-                Collections.sort(MainActivity.masterList);
+                Collections.sort(MainActivity.masterList, Song.SongArtistCompartor);
 
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
-                ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
+                ArrayAdapter<Song> adapter2 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         final int pos = position;
@@ -156,7 +161,7 @@ public class UIManager {
                     }
                 };
 
-                listView.setAdapter(adapter);
+                listView.setAdapter(adapter2);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -168,12 +173,12 @@ public class UIManager {
 
 
             case (MainActivity.MODE_FAVORITE):
-                final ArrayList<Album> albums = new ArrayList<Album>();
-                //Sort the songs alphabetically
-                Collections.sort(MainActivity.masterList);
+
+                //Sort the songs by artists favorite
+                Collections.sort(MainActivity.masterList, Song.SongFavoriteCompartor);
 
                 //custom ArrayAdapter to display both the Song name and Album name on the main screen
-                ArrayAdapter<Song> adapter = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
+                ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         final int pos = position;
@@ -197,7 +202,7 @@ public class UIManager {
                     }
                 };
 
-                listView.setAdapter(adapter);
+                listView.setAdapter(adapter3);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -209,7 +214,7 @@ public class UIManager {
 
 
             case (MainActivity.MODE_FLASHBACK):
-                ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
+                ArrayAdapter<Song> adapter4 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         final int pos = position;
@@ -231,7 +236,7 @@ public class UIManager {
                         return view;
                     }
                 };
-                listView.setAdapter(adapter3);
+                listView.setAdapter(adapter4);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
