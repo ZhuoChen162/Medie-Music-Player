@@ -1,12 +1,15 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.app.DownloadManager;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import android.media.MediaPlayer;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Calendar;
 
 import java.util.ArrayList;
@@ -360,5 +364,54 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * This is the method that used to download the songs by its URL
+     * To use this method, first parse the URL to URI and then pass to it
+     * and then it will download the song for you
+     * @param uri song's uri
+     * @param songName name that you want to store
+     * @return id reference of the songs
+     */
+
+    private long DownloadSongs (Uri uri, String songName) {
+
+        long downloadReference;
+
+        // Create request for android download manager
+        DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        //Setting title of request
+        request.setTitle("Data Download");
+
+        //Setting description of request
+        request.setDescription("Android Data download using DownloadManager.");
+
+        //Set the local destination for the downloaded file to a path
+        File destinationFile = new File("/storage/emulated/0/Music", songName);
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.e("Permission error", "You have permission");
+                //set the download song's path and name of the song
+
+            }else {
+
+                Log.e("Permission error","You have asked for permission");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
+            }
+        }
+        else { //you dont need to worry about these stuff below api level 23
+            Log.e("Permission error","You already have the permission");
+            request.setDestinationUri(Uri.fromFile(destinationFile));
+        }
+        request.setDestinationUri(Uri.fromFile(destinationFile));
+        //Enqueue download and save into referenceId
+        downloadReference = downloadManager.enqueue(request);
+
+        return downloadReference;
     }
 }
