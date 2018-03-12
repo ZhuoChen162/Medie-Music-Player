@@ -73,10 +73,12 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(android.R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.masterList.get(position).getName());
                         text2.setText(MainActivity.masterList.get(position).getAlbumName());
+                        text3.setText(MainActivity.masterList.get(position).getArtist());
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
