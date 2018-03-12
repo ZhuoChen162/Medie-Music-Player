@@ -69,7 +69,7 @@ public interface Song extends Comparable {
             Integer Favorite1 = s1.getPreference();
             Integer Favorite2 = s2.getPreference();
 
-            //ascending order
-            return Favorite1.compareTo(Favorite2);
+            //descending order
+            return (-1*Favorite1.compareTo(Favorite2));
         }};
 }

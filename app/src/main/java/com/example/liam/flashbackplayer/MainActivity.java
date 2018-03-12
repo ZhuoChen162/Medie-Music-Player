@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_FAVORITE = 5;
 
 
-    public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
+    public static final int[] FAVE_ICONS = {R.drawable.ic_delete, R.drawable.ic_add, R.drawable.ic_checkmark_sq};
 
     protected static HashMap<String, Album> albumMap;
     protected static ArrayList<Song> masterList;
