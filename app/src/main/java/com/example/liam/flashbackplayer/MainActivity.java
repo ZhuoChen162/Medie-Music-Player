@@ -57,17 +57,14 @@ public class MainActivity extends AppCompatActivity {
 
     protected MediaPlayer mediaPlayer;
     protected SharedPreferenceDriver prefs;
-    protected boolean isAlbumExpanded;
 
-    protected int currSong;
-    protected int playMode;
     protected int prevMode;
     protected int displayMode;
 
     //for update loc and time
-    private FlashbackManager flashbackManager = new FlashbackManager(this);
-    private UIManager uiManager;
-    private AppMediator appMediator;
+    protected FlashbackManager flashbackManager = new FlashbackManager(this);
+    protected UIManager uiManager;
+    protected AppMediator appMediator;
 
     /**
      * Override the oncreate method to handle the basic button function such as
@@ -240,10 +237,8 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer = new MediaPlayer();
         }
         prefs = new SharedPreferenceDriver(getPreferences(MODE_PRIVATE));
-        currSong = 0;
         //defaults to song mode
         displayMode = prefs.getInt("mode");
-        isAlbumExpanded = false;
         MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
         loader.init();
         albumMap = loader.getAlbumMap();

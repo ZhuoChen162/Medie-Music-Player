@@ -33,6 +33,7 @@ public class UIManager {
     public UIManager(Activity activity) {
         this.activity = activity;
         this.isActive = true;
+        this.isAlbumExpanded = false;
         Button skipBack = (
                 Button) activity.findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {

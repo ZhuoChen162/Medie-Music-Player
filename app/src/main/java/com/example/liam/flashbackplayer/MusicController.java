@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Button;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MusicController {
     private Activity activity;
@@ -46,7 +47,7 @@ public class MusicController {
             Log.e("LOAD MEDIA", e.getMessage());
         }
 
-        appMediator.startPlay(toPlay);
+        appMediator.startPlay(toPlay, new GPSTracker(activity.getApplicationContext()), Calendar.getInstance());
         appMediator.updateSeekBar(mediaPlayer.getDuration());
     }
 

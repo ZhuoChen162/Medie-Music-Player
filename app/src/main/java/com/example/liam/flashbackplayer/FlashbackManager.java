@@ -129,7 +129,7 @@ public class FlashbackManager {
 
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        currTime = sdf.format(new Date());
+        currTime = sdf.format(new Date(calendar.getTimeInMillis()));
     }
 
     /**
@@ -170,6 +170,11 @@ public class FlashbackManager {
 
     public String getCurrTime() {
         return currTime;
+    }
+
+    public void setCurrTime(long millis) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        currTime = sdf.format(new Date(millis));
     }
     public double getLongitude() {
         return longitude;
