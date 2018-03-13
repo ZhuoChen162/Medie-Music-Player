@@ -224,4 +224,14 @@ public class UITests {
         assertEquals(intSize-1, main.musicController.getCurrSong());
     }
 
+    @Test
+    public void ms2story3Test() {
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Names")).check(matches(isDisplayed()));
+        onView(withText("Albums")).check(matches(isDisplayed()));
+        onView(withText("Artist")).check(matches(isDisplayed()));
+        onView(withText("Fav")).check(matches(isDisplayed()));
+    }
+
 }
