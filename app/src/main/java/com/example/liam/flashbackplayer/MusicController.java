@@ -130,6 +130,10 @@ public class MusicController {
         return this.mediaPlayer.getCurrentPosition();
     }
 
+    public int getDuration() {
+        return this.mediaPlayer.getDuration();
+    }
+
     public void setVolume(int i) {
         this.mediaPlayer.setVolume(i / 100f, i / 100f);
     }

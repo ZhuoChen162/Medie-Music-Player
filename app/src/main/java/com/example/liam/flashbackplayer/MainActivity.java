@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     //for update loc and time
     protected FlashbackManager flashbackManager = new FlashbackManager(this);
     protected UIManager uiManager;
+    protected MusicController musicController;
     protected AppMediator appMediator;
 
     /**
@@ -246,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         for (Album toAdd : albumMap.values()) {
             masterList.addAll(toAdd.getSongList());
         }
-        MusicController musicController = new MusicController(mediaPlayer, this);
+        musicController = new MusicController(mediaPlayer, this);
         uiManager  = new UIManager(this);
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, this);
 
