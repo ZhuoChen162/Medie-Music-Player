@@ -15,6 +15,8 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -73,13 +75,12 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-                        //TextView text3 = (TextView) view.findViewById(android.R.id.text3);
-
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.masterList.get(position).getName());
-                        text2.setText(MainActivity.masterList.get(position).getAlbumName());
-                        //text3.setText(MainActivity.masterList.get(position).getArtist());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
 
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
@@ -148,10 +149,12 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.masterList.get(position).getName());
-                        text2.setText(MainActivity.masterList.get(position).getAlbumName());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -189,10 +192,12 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.masterList.get(position).getName());
-                        text2.setText(MainActivity.masterList.get(position).getAlbumName());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -225,10 +230,12 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.flashbackList.get(position).getName());
-                        text2.setText(MainActivity.flashbackList.get(position).getAlbumName());
+                        text2.setText(MainActivity.flashbackList.get(position).getArtist());
+                        text3.setText(MainActivity.flashbackList.get(position).getAlbumName());
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.flashbackList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -272,10 +279,12 @@ public class UIManager {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                TextView text3 = (TextView) view.findViewById(R.id.text3);
                 final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                 text1.setText(MainActivity.perAlbumList.get(position).getName());
-                text2.setText(MainActivity.perAlbumList.get(position).getAlbumName());
+                text2.setText(MainActivity.perAlbumList.get(position).getArtist());
+                text3.setText(MainActivity.perAlbumList.get(position).getAlbumName());
                 fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.perAlbumList.get(position).getPreference()]);
                 fave.setOnClickListener(new View.OnClickListener() {
                     @Override
