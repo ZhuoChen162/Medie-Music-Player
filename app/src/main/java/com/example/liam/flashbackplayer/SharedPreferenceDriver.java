@@ -49,7 +49,6 @@ public class SharedPreferenceDriver {
         Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
                 .create();
         String json = gson.toJson(toSave);
-        Log.i("JSON", json);
         prefsEditor.putString(id, json);
         prefsEditor.apply();
     }
@@ -64,17 +63,24 @@ public class SharedPreferenceDriver {
         Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
                 .create();
         String json = prefs.getString(id, "");
-        Log.i("JSON BACK", json);
         Type alistType = new TypeToken<HashMap<String, Album>>() {
         }.getType();
         return gson.fromJson(json, alistType);
+    }
+
+    public HashMap<String, String> getUrlList(String id) {
+        Gson gson = new Gson();
+        String storedUrlList = prefs.getString(id, "");
+        if (storedUrlList.isEmpty()) return null;
+        java.lang.reflect.Type type = new TypeToken<HashMap<String, String>>() {
+        }.getType();
+        return gson.fromJson(storedUrlList, type);
     }
 
     public ArrayList<History> getHistory(String id) {
         Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
                 .create();
         String json = prefs.getString(id, "");
-        Log.i("JSON BACK", json);
         Type alistType = new TypeToken<ArrayList<History>>() {
         }.getType();
         return gson.fromJson(json, alistType);

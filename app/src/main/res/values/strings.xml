@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Flashback Player</string>
+
+    <string name="clientID">518276155353-98th7c24av30ehr17pg41rplqco30gk5.apps.googleusercontent.com</string>
+    <string name="clientSecret">IiZ1zaH_E4-M2yH5Zhrsbd-N</string>
 </resources>

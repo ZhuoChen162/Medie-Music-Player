@@ -1,6 +1,7 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -27,6 +28,8 @@ import java.util.Calendar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 /**
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
     public static final int MODE_HISTORY = 3;
+    private static final int GOOGLE_SIGN_IN = 9002;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
 
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     protected static ArrayList<Song> perAlbumList;
     protected static ArrayList<Song> flashbackList;
     protected static ArrayList<History> history;
+
+    protected static HashMap<String, String> emailAndName;
+    protected static String myEmail;
 
     protected MediaPlayer mediaPlayer;
     protected SharedPreferenceDriver prefs;
@@ -61,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
     private UIManager uiManager;
     private AppMediator appMediator;
 
+    private UrlList urlList;
+    private FirebaseService fbs;
+    private Button signInBtn;
+
     /**
      * Override the oncreate method to handle the basic button function such as
      * play/pause button, skip forward/back button
@@ -71,6 +82,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        urlList = new UrlList();
+        fbs = new FirebaseService(urlList);
+
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -119,8 +134,8 @@ public class MainActivity extends AppCompatActivity {
                     PriorityQueue<Song> pq = flashbackManager.getRankList();
 
                     //add songs in pq into the flashbackList
-                    while(!pq.isEmpty()) {
-                        if(!flashbackList.contains(pq.peek())) {
+                    while (!pq.isEmpty()) {
+                        if (!flashbackList.contains(pq.peek())) {
                             flashbackList.add(pq.poll());
                             break;
                         }
@@ -136,8 +151,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button signInBtn = findViewById(R.id.btnSignIn);
+        signInBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, GoogleLoginActivity.class);
+                startActivityForResult(intent, GOOGLE_SIGN_IN);
+            }
+        });
+
         // The player starts at player mode, so set the button color to gray
         playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+
+        onEnterVibeMode();
+    }
+
+    protected void onEnterVibeMode() {
+        fbs.makeCloudChangelist(urlList.getUrlMap(), urlList.getCloudChange());
+        urlList.makeLocalChangelist(masterList);
+
+        fbs.updateCloudSongList(urlList.getLocalChange());
     }
 
     /**
@@ -153,9 +186,12 @@ public class MainActivity extends AppCompatActivity {
             if (history != null) {
                 prefs.saveObjectWithSongs(history, "history");
             }
+            if (urlList != null) {
+                prefs.saveObject(urlList.getUrlMap(), "urlList");
+            }
             prefs.saveInt(displayMode, "mode");
         }
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(false);
         }
     }
@@ -166,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(true);
         }
     }
@@ -244,8 +280,8 @@ public class MainActivity extends AppCompatActivity {
             masterList.addAll(toAdd.getSongList());
         }
         MusicController musicController = new MusicController(mediaPlayer, this);
-        uiManager  = new UIManager(this);
-        appMediator = new AppMediator(flashbackManager, musicController, uiManager, this);
+        uiManager = new UIManager(this);
+        appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
         history = prefs.getHistory("history");
         if (history == null) {
@@ -258,7 +294,12 @@ public class MainActivity extends AppCompatActivity {
             history = new ArrayList<>();
         }
 
-        if(displayMode == MODE_FLASHBACK) {
+        Map<String, String> storedUrlList = prefs.getUrlList("urlList");
+        if (storedUrlList != null) {
+            urlList.addToUrlMap(storedUrlList);
+        }
+
+        if (displayMode == MODE_FLASHBACK) {
             GPSTracker gps = new GPSTracker(this);
             flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
             flashbackManager.rankSongs(masterList);
@@ -268,7 +309,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         uiManager.populateUI(displayMode);
-
     }
 
     private void viewHistory() {
@@ -278,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-                if(history.get(position).getSong() != null) {
+                if (history.get(position).getSong() != null) {
                     text1.setText(history.get(position).getSong().getName());
                 }
                 text2.setText(history.get(position).getTime());
@@ -342,6 +382,19 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == GOOGLE_SIGN_IN) {
+            if (resultCode == RESULT_OK && data != null) {
+                myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
+                appMediator.setUserId(myEmail);
+                emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
+
+                fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
+            }
         }
     }
 }

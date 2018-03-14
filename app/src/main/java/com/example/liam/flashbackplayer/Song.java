@@ -20,6 +20,8 @@ public interface Song extends Comparable {
 
     int getRanking();
 
+    void setRanking(int ranking);
+
     String getName();
 
     String getSource();
@@ -43,6 +45,10 @@ public interface Song extends Comparable {
     long getLastPlayTime();
 
     void play(MediaPlayer mediaPlayer);
+
+    String getId();
+
+    String getUrl();
 
     @Override
     int compareTo(@NonNull Object o);

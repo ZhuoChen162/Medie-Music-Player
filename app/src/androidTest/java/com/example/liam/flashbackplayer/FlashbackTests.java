@@ -1,9 +1,6 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
 
@@ -55,8 +52,8 @@ public class FlashbackTests {
         assertEquals(2, pq.size());
         Song popped = pq.poll();
         assertEquals(1, pq.size());
-        assertEquals(-27.516743, popped.getLocations().get(0).getLatitude(),0.01);
-        assertEquals(134.342188, popped.getLocations().get(0).getlongtitude(),0.01);
+        assertEquals(-27.516743, popped.getLocations().get(0).latitude,0.01);
+        assertEquals(134.342188, popped.getLocations().get(0).longitude,0.01);
     }
 
     @Test

@@ -21,6 +21,9 @@ public class FlashbackManager {
     private int hour;
     private int mins;
     private long lastPlayedTime;
+
+    private int yearAndDay;
+
     private String addressKey;
     private String currTime;
     private Context context;
@@ -85,7 +88,7 @@ public class FlashbackManager {
 
             //store the songs into PQ
             if (theSong.getPreference() == Song.FAVORITE ||
-                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)){
+                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)) {
                 this.rankings.add(theSong);
             }
         }
@@ -124,6 +127,8 @@ public class FlashbackManager {
         hour = calendar.get(Calendar.HOUR_OF_DAY);
         mins = calendar.get(Calendar.MINUTE);
 
+        yearAndDay = calendar.get(Calendar.DAY_OF_YEAR) + calendar.get(Calendar.YEAR) * 1000;
+
         //calculate lastPlayedTime in double format
         lastPlayedTime = date * 10000 + hour * 100 + mins;
 
@@ -143,7 +148,7 @@ public class FlashbackManager {
             } else if (left.getRanking() < right.getRanking()) {
                 return 1;
             } else {
-                if (left.getLastPlayTime() > right.getLastPlayTime())
+                if (left.getPreference() > right.getPreference())
                     return -1;
                 else
                     return 1;
@@ -164,6 +169,10 @@ public class FlashbackManager {
         return lastPlayedTime;
     }
 
+    public int getYearAndDay() {
+        return yearAndDay;
+    }
+
     public String getAddressKey() {
         return addressKey;
     }
@@ -171,6 +180,7 @@ public class FlashbackManager {
     public String getCurrTime() {
         return currTime;
     }
+
     public double getLongitude() {
         return longitude;
     }
