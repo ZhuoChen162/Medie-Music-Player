@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.PriorityQueue;
 
 
@@ -88,7 +89,7 @@ public class FlashbackManager {
 
             //store the songs into PQ
             if (theSong.getPreference() == Song.FAVORITE ||
-                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)) {
+                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)){
                 this.rankings.add(theSong);
             }
         }
@@ -148,7 +149,7 @@ public class FlashbackManager {
             } else if (left.getRanking() < right.getRanking()) {
                 return 1;
             } else {
-                if (left.getPreference() > right.getPreference())
+                if (left.getLastPlayTime() > right.getLastPlayTime())
                     return -1;
                 else
                     return 1;
@@ -181,6 +182,10 @@ public class FlashbackManager {
         return currTime;
     }
 
+    public void setCurrTime(long millis) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        currTime = sdf.format(new Date(millis));
+    }
     public double getLongitude() {
         return longitude;
     }

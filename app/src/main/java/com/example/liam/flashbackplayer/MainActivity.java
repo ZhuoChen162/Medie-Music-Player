@@ -1,6 +1,7 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -8,6 +9,8 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,11 +27,11 @@ import android.media.MediaPlayer;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Calendar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -42,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_FLASHBACK = 2;
     public static final int MODE_HISTORY = 3;
     private static final int GOOGLE_SIGN_IN = 9002;
+    //added modes for display by artist and display by Favorites
+    public static final int MODE_ARTIST = 4;
+    public static final int MODE_FAVORITE = 5;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
 
@@ -64,9 +70,10 @@ public class MainActivity extends AppCompatActivity {
     protected int displayMode;
 
     //for update loc and time
-    private FlashbackManager flashbackManager = new FlashbackManager(this);
-    private UIManager uiManager;
-    private AppMediator appMediator;
+    protected FlashbackManager flashbackManager = new FlashbackManager(this);
+    protected UIManager uiManager;
+    protected MusicController musicController;
+    protected AppMediator appMediator;
 
     private UrlList urlList;
     private FirebaseService fbs;
@@ -134,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
                     PriorityQueue<Song> pq = flashbackManager.getRankList();
 
                     //add songs in pq into the flashbackList
-                    while (!pq.isEmpty()) {
-                        if (!flashbackList.contains(pq.peek())) {
+                    while(!pq.isEmpty()) {
+                        if(!flashbackList.contains(pq.peek())) {
                             flashbackList.add(pq.poll());
                             break;
                         }
@@ -191,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             }
             prefs.saveInt(displayMode, "mode");
         }
-        if (uiManager != null) {
+        if(uiManager != null) {
             uiManager.setIsActive(false);
         }
     }
@@ -202,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (uiManager != null) {
+        if(uiManager != null) {
             uiManager.setIsActive(true);
         }
     }
@@ -318,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-                if (history.get(position).getSong() != null) {
+                if(history.get(position).getSong() != null) {
                     text1.setText(history.get(position).getSong().getName());
                 }
                 text2.setText(history.get(position).getTime());
@@ -364,22 +371,35 @@ public class MainActivity extends AppCompatActivity {
                 ((Button) findViewById(R.id.btnPlayer)).getBackground().clearColorFilter();
                 ((Button) findViewById(R.id.btnFlashback)).getBackground().clearColorFilter();
                 return true;
+
+            //display sorted by title
             case R.id.btn_sortby_title:
                 item.setChecked(true);
                 displayMode = MODE_SONG;
                 uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by album
             case R.id.btn_sortby_album:
                 item.setChecked(true);
                 displayMode = MODE_ALBUM;
                 uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by artiest
             case R.id.btn_sortby_artist:
                 item.setChecked(true);
+                displayMode = MODE_ARTIST;
+                uiManager.populateUI(displayMode);
                 return true;
+
+            //display sorted by favorite
             case R.id.btn_sortby_fav:
                 item.setChecked(true);
+                displayMode = MODE_FAVORITE;
+                uiManager.populateUI(displayMode);
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -396,5 +416,54 @@ public class MainActivity extends AppCompatActivity {
                 fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
             }
         }
+    }
+
+    /**
+     * This is the method that used to download the songs by its URL
+     * To use this method, first parse the URL to URI and then pass to it
+     * and then it will download the song for you
+     * @param uri song's uri
+     * @param songName name that you want to store
+     * @return id reference of the songs
+     */
+
+    private long DownloadSongs (Uri uri, String songName) {
+
+        long downloadReference;
+
+        // Create request for android download manager
+        DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        //Setting title of request
+        request.setTitle("Data Download");
+
+        //Setting description of request
+        request.setDescription("Android Data download using DownloadManager.");
+
+        //Set the local destination for the downloaded file to a path
+        File destinationFile = new File("/storage/emulated/0/Music", songName);
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.e("Permission error", "You have permission");
+                //set the download song's path and name of the song
+
+            }else {
+
+                Log.e("Permission error","You have asked for permission");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
+            }
+        }
+        else { //you dont need to worry about these stuff below api level 23
+            Log.e("Permission error","You already have the permission");
+            request.setDestinationUri(Uri.fromFile(destinationFile));
+        }
+        request.setDestinationUri(Uri.fromFile(destinationFile));
+        //Enqueue download and save into referenceId
+        downloadReference = downloadManager.enqueue(request);
+
+        return downloadReference;
     }
 }

@@ -8,6 +8,7 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -36,8 +38,8 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
@@ -57,12 +59,13 @@ public class UITests {
 
     @Before
     public void ensureSongMode() {
-        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
-        songBtn.perform(click());
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Names")).perform(click());
     }
 
     @Test
-    public void story1Test() {
+    public void ms1story1Test() {
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
@@ -80,12 +83,6 @@ public class UITests {
 
         ViewInteraction button3 = onView(withId(R.id.skipForward));
         button3.check(matches(isDisplayed()));
-
-        ViewInteraction button4 = onView(withId(R.id.btn_sortby_name));
-        button4.check(matches(isDisplayed()));
-
-        ViewInteraction button5 = onView(withId(R.id.btn_sortby_album));
-        button5.check(matches(isDisplayed()));
 
         ViewInteraction button6 = onView(withId(R.id.btnFlashback));
         button6.check(matches(isDisplayed()));
@@ -106,16 +103,16 @@ public class UITests {
     }
 
     @Test
-    public void story2Test() {
+    public void ms1story2Test() {
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
         ListView listView = (ListView) mActivityTestRule.getActivity().findViewById(R.id.songDisplay);
         ListAdapter adapter = listView.getAdapter();
         int songCount = adapter.getCount();
 
-        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
-        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
 
         //enter album mode
-        albumBtn.perform(click());
+        sortBtn.perform(click());
+        onView(withText("Albums")).perform(click());
         adapter = listView.getAdapter();
         int albumCount = adapter.getCount();
         assertEquals((songCount >= albumCount), true);
@@ -123,20 +120,21 @@ public class UITests {
         //enter/exit specific album view
         DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
         twoLineListItem2.perform(click());
-        assertEquals(mActivityTestRule.getActivity().isAlbumExpanded, true);
+        assertEquals(true, mActivityTestRule.getActivity().uiManager.isAlbumExpanded());
         adapter = listView.getAdapter();
         assertThat(adapter.getCount(), greaterThan(0));
         pressBack();
-        assertEquals(mActivityTestRule.getActivity().isAlbumExpanded, false);
+        assertEquals(false, mActivityTestRule.getActivity().uiManager.isAlbumExpanded());
 
         //enter song mode
-        songBtn.perform(click());
+        sortBtn.perform(click());
+        onView(withText("Names")).perform(click());
         adapter = listView.getAdapter();
         assertEquals(adapter.getCount(), songCount);
     }
 
     @Test
-    public void story3Test() {
+    public void ms1story3Test() {
         MainActivity main = mActivityTestRule.getActivity();
         //check to make sure all fields exist when a song is playing
         DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
@@ -157,13 +155,10 @@ public class UITests {
         //Mock Location and Time to make testing deterministic
         //April 7 1997 03:10 AM, New York, NY
         MockLocation mockLoc = new MockLocation(40.7732951, -73.9819386);
-        main.updateLocAndTime(mockLoc, Calendar.getInstance());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        long millis = 860407800000L;
-        main.currTime = sdf.format(new Date(millis));
-        assertEquals("New York136", main.addressKey);
-        assertEquals("1997/04/07 03:10", main.currTime);
-        main.displayInfo(main.masterList.get(0).getName(), main.masterList.get(0).getAlbumName(), main.addressKey, main.currTime);
+        MockCalendar mockCal = new MockCalendar(860407800000L);
+        main.appMediator.startPlay(main.masterList.get(0), mockLoc, mockCal);
+        assertEquals("New York136", main.flashbackManager.getAddressKey());
+        assertEquals("1997/04/07 03:10", main.flashbackManager.getCurrTime());
 
         //Ensure that all fields have appropriate values
         TextView song = (TextView) main.findViewById(R.id.SongName);
@@ -172,12 +167,12 @@ public class UITests {
         TextView time = (TextView) main.findViewById(R.id.currentTime);
         assertEquals(main.masterList.get(0).getName(), song.getText());
         assertEquals("Album: " + main.masterList.get(0).getAlbumName(), album.getText());
-        assertEquals("Location: " + main.addressKey, loc.getText());
-        assertEquals("PlayTime: " + main.currTime, time.getText());
+        assertEquals("Location: " + main.flashbackManager.getAddressKey(), loc.getText());
+        assertEquals("PlayTime: " + main.flashbackManager.getCurrTime(), time.getText());
     }
 
     @Test
-    public void story4Test() {
+    public void ms1story4Test() {
         MainActivity main = mActivityTestRule.getActivity();
         ListView listView = main.findViewById(R.id.songDisplay);
         View childView = listView.getChildAt(0);
@@ -197,39 +192,46 @@ public class UITests {
     }
 
     @Test
-    public void story5Test() {
-        MainActivity main = mActivityTestRule.getActivity();
+    public void ms2story2Test() {
+        final MainActivity main = mActivityTestRule.getActivity();
         ListView listView = main.findViewById(R.id.songDisplay);
+
+        //enter album mode
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Albums")).perform(click());
+
+        DataInteraction album = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
         View childView = listView.getChildAt(0);
-        ImageView favicoView = (ImageView) childView.findViewById(R.id.pref);
-        DataInteraction favico = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0).onChildView(withId(R.id.pref));
-        favico.check(matches(isDisplayed()));
-        main.masterList.get(0).setPreference(Song.FAVORITE);
+        final TextView albumCount = (TextView) childView.findViewById(android.R.id.text2);
+        //ensure that an album is not empty
+        assert(albumCount.getText().charAt(0) != '0');
 
-        //simulating touching flashback button
-        ViewInteraction flashbackButton = onView(withId(R.id.btnFlashback));
-        flashbackButton.perform(click());
-
-        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
-        twoLineListItem2.check(matches(isDisplayed()));
+        //get number of tracks
+        String size = "";
+        int i = 0;
+        while(albumCount.getText().charAt(i) != ' ') {
+            size += albumCount.getText().charAt(i);
+            i++;
+        }
+        int intSize = Integer.parseInt(size);
+        //ensure that all songs in album can be reached
+        album.perform(click());
+        ViewInteraction skipForward = onView(withId(R.id.skipForward));
+        while(main.musicController.isPlaying()) {
+            skipForward.perform(click());
+        }
+        assertEquals(intSize-1, main.musicController.getCurrSong());
     }
 
-    private static Matcher<View> childAtPosition(
-            final Matcher<View> parentMatcher, final int position) {
-
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Child at position " + position + " in parent ");
-                parentMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
-                        && view.equals(((ViewGroup) parent).getChildAt(position));
-            }
-        };
+    @Test
+    public void ms2story3Test() {
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Names")).check(matches(isDisplayed()));
+        onView(withText("Albums")).check(matches(isDisplayed()));
+        onView(withText("Artist")).check(matches(isDisplayed()));
+        onView(withText("Fav")).check(matches(isDisplayed()));
     }
+
 }

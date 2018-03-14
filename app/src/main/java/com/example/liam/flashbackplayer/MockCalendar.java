@@ -13,15 +13,13 @@ public class MockCalendar extends Calendar{
 
     public MockCalendar(long millis){ this.millis =  millis;}
 
-    public static MockCalendar getInstance(){ return new MockCalendar(new Date().getTime());}
-
-    public long getTimeInMilis() {return millis;}
-
-    public void setTimeInMilis(long ms){ millis = ms;}
+    @Override
+    public long getTimeInMillis() {
+        return this.millis;
+    }
 
     @Override
     protected void computeTime() {
-
     }
 
     @Override
@@ -30,32 +28,33 @@ public class MockCalendar extends Calendar{
     }
 
     @Override
-    public void add(int field, int amount) {
+    public void add(int i, int i1) {
 
     }
 
     @Override
-    public void roll(int field, boolean up) {
+    public void roll(int i, boolean b) {
 
     }
 
     @Override
-    public int getMinimum(int field) {
+    public int getMinimum(int i) {
         return 0;
     }
 
     @Override
-    public int getMaximum(int field) {
+    public int getMaximum(int i) {
         return 0;
     }
 
     @Override
-    public int getGreatestMinimum(int field) {
+    public int getGreatestMinimum(int i) {
         return 0;
     }
 
     @Override
-    public int getLeastMaximum(int field) {
+    public int getLeastMaximum(int i) {
         return 0;
     }
+
 }

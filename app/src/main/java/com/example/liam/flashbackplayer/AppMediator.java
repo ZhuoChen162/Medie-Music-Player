@@ -119,10 +119,9 @@ public class AppMediator {
         }
     }
 
-    public void startPlay(Song playing) {
+    public void startPlay(Song playing, GPSTracker gps, Calendar cal) {
         //update curr loc and time, for display and storage
-        GPSTracker gps = new GPSTracker(flashbackManager.getContext());
-        flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
+        flashbackManager.updateLocAndTime(gps, cal);
         uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime());
         Drawable pauseImg = activity.getResources().getDrawable(R.drawable.ic_pause);
         Button playPause = (Button) activity.findViewById(R.id.buttonPlay);
