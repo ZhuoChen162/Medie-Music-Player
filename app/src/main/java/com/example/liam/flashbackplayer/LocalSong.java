@@ -47,7 +47,7 @@ public class LocalSong implements Song {
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
-        this.id = name + "$" + albumName;
+        this.id = name + "=" + albumName;
 
         this.timePeriod = new int[3];
         this.day = new int[7];
