@@ -10,6 +10,8 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.PriorityQueue;
 
+import static com.example.liam.flashbackplayer.MainActivity.myEmail;
+
 public class AppMediator {
     private FlashbackManager flashbackManager;
     private MusicController musicController;
@@ -122,7 +124,30 @@ public class AppMediator {
     public void startPlay(Song playing, GPSTracker gps, Calendar cal) {
         //update curr loc and time, for display and storage
         flashbackManager.updateLocAndTime(gps, cal);
-        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime());
+
+        // ----- Added by Jackie Mar 14th    -------------
+        //obtain playByName
+        String playByName = "";
+        AnnoymousName annomyous= new AnnoymousName();
+
+        // played by you
+        if(myEmail .equals( playing.getPlayedBy()) ) {
+            playByName = MainActivity.myEmail;
+        }
+        //played by a friend
+        else if( MainActivity.emailAndName.containsKey(playing.getPlayedBy())) {
+            playByName = MainActivity.emailAndName.get(playing.getPlayedBy());
+        }
+        //played by annomyous
+        else {
+            playByName = annomyous.isAnnomyousName(playing.getPlayedBy());
+        }
+
+        //call display to display songs related info
+        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime(), playByName );
+        //------------
+
+
         Drawable pauseImg = activity.getResources().getDrawable(R.drawable.ic_pause);
         Button playPause = (Button) activity.findViewById(R.id.buttonPlay);
         playPause.setBackground(pauseImg);

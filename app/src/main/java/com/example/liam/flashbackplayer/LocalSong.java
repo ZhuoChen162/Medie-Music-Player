@@ -19,7 +19,7 @@ public class LocalSong implements Song {
     private int length; //length in milliseconds
 
     private String id;
-    private String playedBy;
+    private String playedBy;    //email of the top ranking
 
     private int[] timePeriod; // period of a day, declared to be an array of size 3
     //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
@@ -208,6 +208,15 @@ public class LocalSong implements Song {
         return preference;
     }
 
+    @Override
+    public String getPlayedBy() {
+        return playedBy;
+    }
+
+    public void setPlayedBy(String playedBy) {
+        this.playedBy = playedBy;
+    }
+
     /**
      * Change the preference of the song to the next possible kind
      */
@@ -263,12 +272,5 @@ public class LocalSong implements Song {
         return id;
     }
 
-    public String getPlayedBy() {
-        return playedBy;
-    }
-
-    public void setPlayedBy(String playedBy) {
-        this.playedBy = playedBy;
-    }
 }
 

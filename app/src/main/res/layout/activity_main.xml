@@ -80,7 +80,7 @@
         android:id="@+id/skipBack"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_marginBottom="25dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/ic_back"
         app:layout_constraintBottom_toTopOf="@+id/player_volume"
         app:layout_constraintEnd_toStartOf="@+id/buttonPlay"
@@ -100,7 +100,7 @@
 
     <Button
         android:id="@+id/skipForward"
-        android:layout_width="45dp"
+        android:layout_width="41dp"
         android:layout_height="45dp"
         android:background="@drawable/ic_next"
         app:layout_constraintBaseline_toBaselineOf="@id/skipBack"
@@ -150,12 +150,13 @@
 
     <TextView
         android:id="@+id/AlbumName"
-        android:layout_width="170dp"
-        android:layout_height="42dp"
+        android:layout_width="164dp"
+        android:layout_height="17dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
+        android:textSize="8sp"
         app:layout_constraintBottom_toTopOf="@+id/skipBack"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -165,25 +166,40 @@
 
     <TextView
         android:id="@+id/currentTime"
-        android:layout_width="148dp"
-        android:layout_height="42dp"
+        android:layout_width="167dp"
+        android:layout_height="18dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/AlbumName"
+        android:textSize="8sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.958"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteY="371dp" />
 
     <TextView
         android:id="@+id/currentLocation"
-        android:layout_width="166dp"
-        android:layout_height="37dp"
+        android:layout_width="173dp"
+        android:layout_height="27dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:textSize="8sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/SongName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/SongName"
         tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/playBy"
+        android:layout_width="247dp"
+        android:layout_height="26dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/skipBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/AlbumName" />
 
 </android.support.constraint.ConstraintLayout>

@@ -78,4 +78,6 @@ public interface Song extends Comparable {
             //descending order
             return (-1*Favorite1.compareTo(Favorite2));
         }};
+
+    String getPlayedBy();
 }

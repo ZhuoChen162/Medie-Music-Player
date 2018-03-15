@@ -318,18 +318,23 @@ public class UIManager {
      * @param album    of the song
      * @param loc      when play it
      * @param currTime time when play the song
+     * @param playByName who play it
      */
-    public void displayInfo(String name, String album, String loc, String currTime) {
+
+
+    public void displayInfo(String name, String album, String loc, String currTime, String playByName) {
 
         TextView songName = (TextView) activity.findViewById(R.id.SongName);
         TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
         TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
         TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
+        TextView playBy = (TextView) activity.findViewById(R.id.playBy);
 
         songName.setText(name);
         AlbumName.setText("Album: " + album);
-        currentTime.setText("PlayTime: " + currTime);
-        currentLocation.setText("Location: " + loc);
+        currentTime.setText("Time: " + currTime);
+        currentLocation.setText("Loc: " + loc);
+        playBy.setText("play by: " + playByName);
     }
 
     /**

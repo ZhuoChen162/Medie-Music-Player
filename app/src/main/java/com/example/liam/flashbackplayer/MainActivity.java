@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     protected static ArrayList<Song> flashbackList;
     protected static ArrayList<History> history;
 
+
     protected static HashMap<String, String> emailAndName;
     protected static String myEmail;
 
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
