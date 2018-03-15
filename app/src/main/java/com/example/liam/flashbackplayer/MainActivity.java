@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         // The player starts at player mode, so set the button color to gray
         playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
 
-        onEnterVibeMode();
+//        onEnterVibeMode();
     }
 
     protected void onEnterVibeMode() {

@@ -53,6 +53,10 @@ public interface Song extends Comparable {
 
     String getUrl();
 
+    String getPlayedBy();
+
+    void setPlayedBy(String playedBy);
+
     @Override
     int compareTo(@NonNull Object o);
 
@@ -65,7 +69,8 @@ public interface Song extends Comparable {
 
             //ascending order
             return Artist1.compareTo(Artist2);
-        }};
+        }
+    };
 
     /*Comparator for sorting the list by favorite*/
     Comparator<Song> SongFavoriteCompartor = new Comparator<Song>() {
@@ -76,8 +81,7 @@ public interface Song extends Comparable {
             Integer Favorite2 = s2.getPreference();
 
             //descending order
-            return (-1*Favorite1.compareTo(Favorite2));
-        }};
-
-    String getPlayedBy();
+            return (-1 * Favorite1.compareTo(Favorite2));
+        }
+    };
 }
