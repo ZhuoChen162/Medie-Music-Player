@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_ARTIST = 4;
     public static final int MODE_FAVORITE = 5;
 
-    public static final int[] FAVE_ICONS = {R.drawable.ic_add, R.drawable.ic_delete, R.drawable.ic_checkmark_sq};
+    public static final int[] FAVE_ICONS = {R.drawable.ic_delete, R.drawable.ic_add, R.drawable.ic_checkmark_sq};
 
     protected static HashMap<String, Album> albumMap;
     protected static ArrayList<Song> masterList;
@@ -168,9 +168,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // The player starts at player mode, so set the button color to gray
-        playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+        //playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
 
-//        onEnterVibeMode();
     }
 
     protected void onEnterVibeMode() {
@@ -295,16 +294,12 @@ public class MainActivity extends AppCompatActivity {
             history = new ArrayList<History>();
         }
 
-
-        history = prefs.getHistory("history");
-        if (history == null) {
-            history = new ArrayList<>();
-        }
-
         Map<String, String> storedUrlList = prefs.getUrlList("urlList");
         if (storedUrlList != null) {
             urlList.addToUrlMap(storedUrlList);
         }
+
+        onEnterVibeMode();
 
         if (displayMode == MODE_FLASHBACK) {
             GPSTracker gps = new GPSTracker(this);
