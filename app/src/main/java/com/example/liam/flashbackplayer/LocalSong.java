@@ -47,7 +47,7 @@ public class LocalSong implements Song {
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
-        this.id = name + albumName;
+        this.id = name + "$" + albumName;
 
         this.timePeriod = new int[3];
         this.day = new int[7];
@@ -58,7 +58,8 @@ public class LocalSong implements Song {
         this.url = "www.test.com";
     }
 
-    public LocalSong(String id, String url) {
+    public LocalSong(String name, String id, String url) {
+        this.name = name;
         this.id = id;
         this.url = url;
     }
