@@ -54,6 +54,7 @@ public class FirebaseService {
                     }
 
                     int maxRank = 0;
+                    String maxUser = "";
                     for (DataSnapshot oneHist : curSongHist.getChildren()) {
                         int curRank = 0;
                         double lat = oneHist.child("lat").getValue(Double.class);
@@ -77,9 +78,13 @@ public class FirebaseService {
 
                         if (curRank == 1000) curRank = 105;
 
-                        if (curRank > maxRank) maxRank = curRank;
+                        if (curRank > maxRank) {
+                            maxRank = curRank;
+                            maxUser = userId;
+                        }
                     }
                     curSong.setRanking(maxRank);
+                    curSong.setPlayedBy(maxUser);
                 }
 
                 for (Song song : songList)
@@ -107,9 +112,6 @@ public class FirebaseService {
         newHist.child("lon").setValue(loc.longitude);
         newHist.child("day").setValue(yearAndDay);
         newHist.child("user").setValue(userId);
-    }
-
-    public void updateFriendList() {
     }
 
     public void uploadSongs() {

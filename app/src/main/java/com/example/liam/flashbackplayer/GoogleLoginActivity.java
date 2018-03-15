@@ -155,11 +155,12 @@ public class GoogleLoginActivity extends AppCompatActivity {
                         List<Name> names = person.getNames();
 
                         if (emailAddresses != null)
+                            emailList.put(emailAddresses.get(0).getValue(), names.get(0).getDisplayName());
+
+                        if (emailAddresses != null)
                             for (EmailAddress emailAddress : emailAddresses)
                                 Log.d("", "email: " + emailAddress.getValue());
                         Log.d("", "names: " + names.get(0).getDisplayName());
-
-                        emailList.put(emailAddresses.get(0).getValue(), names.get(0).getDisplayName());
                     }
                 }
             } catch (IOException e) {
