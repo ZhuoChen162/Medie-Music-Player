@@ -15,8 +15,11 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 public class UIManager {
     private Activity activity;
@@ -32,6 +35,7 @@ public class UIManager {
     public UIManager(Activity activity) {
         this.activity = activity;
         this.isActive = true;
+        this.isAlbumExpanded = false;
         Button skipBack = (
                 Button) activity.findViewById(R.id.skipBack);
         skipBack.setOnClickListener(new View.OnClickListener() {
@@ -53,10 +57,13 @@ public class UIManager {
     }
 
     public void populateUI(final int mode) {
+
+        // MODE_SONG = 0; MODE_ALBUM = 1; MODE_ARTIST = 4;  MODE_FAVORITE = 5;
         displayMode = mode;
         isAlbumExpanded = false;
         ListView listView = (ListView) activity.findViewById(R.id.songDisplay);
         switch (mode) {
+
             case (MainActivity.MODE_SONG):
                 //Sort the songs alphabetically
                 Collections.sort(MainActivity.masterList);
@@ -69,10 +76,13 @@ public class UIManager {
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.masterList.get(position).getName());
-                        text2.setText(MainActivity.masterList.get(position).getAlbumName());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
+
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -95,13 +105,15 @@ public class UIManager {
                     }
                 });
                 break;
+
+
             case (MainActivity.MODE_ALBUM):
                 final ArrayList<Album> albums = new ArrayList<Album>();
                 albums.addAll(MainActivity.albumMap.values());
                 //sort the albums in order
                 Collections.sort(albums);
 
-                ArrayAdapter<Album> adapter2 = new ArrayAdapter<Album>(activity, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
+                ArrayAdapter<Album> adapter1 = new ArrayAdapter<Album>(activity, android.R.layout.simple_list_item_2, android.R.id.text1, albums) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         View view = super.getView(position, convertView, parent);
@@ -113,7 +125,7 @@ public class UIManager {
                         return view;
                     }
                 };
-                listView.setAdapter(adapter2);
+                listView.setAdapter(adapter1);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -123,18 +135,108 @@ public class UIManager {
                     }
                 });
                 break;
-            case (MainActivity.MODE_FLASHBACK):
-                ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
+
+            //added favorite mode and artist mode done by Jackie
+            case (MainActivity.MODE_ARTIST):
+
+                //Sort the songs by artists name alphabetically
+                Collections.sort(MainActivity.masterList, Song.SongArtistCompartor);
+
+                //custom ArrayAdapter to display both the Song name and Album name on the main screen
+                ArrayAdapter<Song> adapter2 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
                         final int pos = position;
                         View view = super.getView(position, convertView, parent);
                         TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                         TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
+                        final ImageView fave = (ImageView) view.findViewById(R.id.pref);
+
+                        text1.setText(MainActivity.masterList.get(position).getName());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
+                        fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
+                        fave.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Song song = MainActivity.masterList.get(pos);
+                                appMediator.setFaveOnclick(song, fave, pos);
+
+                            }
+                        });
+                        return view;
+                    }
+                };
+
+                listView.setAdapter(adapter2);
+                listView.setSelection(0);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        appMediator.setItemOnclick(displayMode, i);
+                    }
+                });
+                break;
+
+
+            case (MainActivity.MODE_FAVORITE):
+
+                //Sort the songs by artists favorite
+                Collections.sort(MainActivity.masterList, Song.SongFavoriteCompartor);
+
+                //custom ArrayAdapter to display both the Song name and Album name on the main screen
+                ArrayAdapter<Song> adapter3 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.masterList) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        final int pos = position;
+                        View view = super.getView(position, convertView, parent);
+                        TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                        TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
+                        final ImageView fave = (ImageView) view.findViewById(R.id.pref);
+
+                        text1.setText(MainActivity.masterList.get(position).getName());
+                        text2.setText(MainActivity.masterList.get(position).getArtist());
+                        text3.setText(MainActivity.masterList.get(position).getAlbumName());
+                        fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.masterList.get(position).getPreference()]);
+                        fave.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Song song = MainActivity.masterList.get(pos);
+                                appMediator.setFaveOnclick(song, fave, pos);
+
+                            }
+                        });
+                        return view;
+                    }
+                };
+
+                listView.setAdapter(adapter3);
+                listView.setSelection(0);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        appMediator.setItemOnclick(displayMode, i);
+                    }
+                });
+                break;
+
+
+            case (MainActivity.MODE_FLASHBACK):
+                ArrayAdapter<Song> adapter4 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        final int pos = position;
+                        View view = super.getView(position, convertView, parent);
+                        TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                        TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                        TextView text3 = (TextView) view.findViewById(R.id.text3);
                         final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                         text1.setText(MainActivity.flashbackList.get(position).getName());
-                        text2.setText(MainActivity.flashbackList.get(position).getAlbumName());
+                        text2.setText(MainActivity.flashbackList.get(position).getArtist());
+                        text3.setText(MainActivity.flashbackList.get(position).getAlbumName());
                         fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.flashbackList.get(position).getPreference()]);
                         fave.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -146,7 +248,7 @@ public class UIManager {
                         return view;
                     }
                 };
-                listView.setAdapter(adapter3);
+                listView.setAdapter(adapter4);
                 listView.setSelection(0);
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -178,10 +280,12 @@ public class UIManager {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                TextView text3 = (TextView) view.findViewById(R.id.text3);
                 final ImageView fave = (ImageView) view.findViewById(R.id.pref);
 
                 text1.setText(MainActivity.perAlbumList.get(position).getName());
-                text2.setText(MainActivity.perAlbumList.get(position).getAlbumName());
+                text2.setText(MainActivity.perAlbumList.get(position).getArtist());
+                text3.setText(MainActivity.perAlbumList.get(position).getAlbumName());
                 fave.setImageResource(MainActivity.FAVE_ICONS[MainActivity.perAlbumList.get(position).getPreference()]);
                 fave.setOnClickListener(new View.OnClickListener() {
                     @Override

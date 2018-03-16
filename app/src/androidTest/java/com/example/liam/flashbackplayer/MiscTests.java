@@ -1,6 +1,8 @@
 package com.example.liam.flashbackplayer;
 
 import android.Manifest;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
@@ -15,9 +17,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.anything;
 import static org.junit.Assert.assertEquals;
 
 public class MiscTests {
@@ -32,8 +38,9 @@ public class MiscTests {
 
     @Before
     public void ensureSongMode() {
-        ViewInteraction songBtn = onView(withId(R.id.btn_sortby_name));
-        songBtn.perform(click());
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Names")).perform(click());
     }
 
     @Test
@@ -41,6 +48,7 @@ public class MiscTests {
         MainActivity main = mainAct.getActivity();
         ArrayList<String> unsorted = new ArrayList<String>();
         ArrayList<String> sorted = new ArrayList<String>();
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
 
         //check if songs in song mode are in alphabetical order
         ListView listView = main.findViewById(R.id.songDisplay);
@@ -56,8 +64,8 @@ public class MiscTests {
         assertEquals(false, sorted == unsorted);
 
         //check if albums in album mode are in alphabetical order
-        ViewInteraction albumBtn = onView(withId(R.id.btn_sortby_album));
-        albumBtn.perform(click());
+        sortBtn.perform(click());
+        onView(withText("Albums")).perform(click());
         unsorted = new ArrayList<>();
         sorted = new ArrayList<>();
         adapter = listView.getAdapter();
@@ -70,5 +78,37 @@ public class MiscTests {
         assertEquals(false, sorted.isEmpty());
         assertEquals(true, sorted.equals(unsorted));
         assertEquals(false, sorted == unsorted);
+
+        //check if songs sort correctly by artist name
+        sortBtn.perform(click());
+        onView(withText("Artist")).perform(click());
+        ArrayList <Song> unsortedSongs = new ArrayList<>();
+        ArrayList<Song> sortedSongs = new ArrayList<>();
+        adapter = listView.getAdapter();
+        for(int i = 0; i < adapter.getCount(); i++) {
+            Song song = (Song) adapter.getItem(i);
+            unsortedSongs.add(song);
+            sortedSongs.add(song);
+        }
+        Collections.sort(sortedSongs, Song.SongArtistCompartor);
+        assertEquals(false, sortedSongs.isEmpty());
+        assertEquals(true, sortedSongs.equals(unsortedSongs));
+        assertEquals(false, sortedSongs == unsortedSongs);
+
+        //check if songs sort correctly by favorite status
+        sortBtn.perform(click());
+        onView(withText("Fav")).perform(click());
+        unsortedSongs = new ArrayList<>();
+        sortedSongs = new ArrayList<>();
+        adapter = listView.getAdapter();
+        for(int i = 0; i < adapter.getCount(); i++) {
+            Song song = (Song) adapter.getItem(i);
+            unsortedSongs.add(song);
+            sortedSongs.add(song);
+        }
+        Collections.sort(sortedSongs, Song.SongFavoriteCompartor);
+        assertEquals(false, sortedSongs.isEmpty());
+        assertEquals(true, sortedSongs.equals(unsortedSongs));
+        assertEquals(false, sortedSongs == unsortedSongs);
     }
 }

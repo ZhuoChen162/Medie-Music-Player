@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.PriorityQueue;
 
 
@@ -21,6 +22,11 @@ public class FlashbackManager {
     private int hour;
     private int mins;
     private long lastPlayedTime;
+    private boolean shouldUpdate;
+    private long mockMillis;
+
+    private int yearAndDay;
+
     private String addressKey;
     private String currTime;
     private Context context;
@@ -34,6 +40,7 @@ public class FlashbackManager {
      */
     public FlashbackManager(Context context) {
         this.context = context;
+        this.shouldUpdate = true;
     }
 
 
@@ -124,12 +131,18 @@ public class FlashbackManager {
         hour = calendar.get(Calendar.HOUR_OF_DAY);
         mins = calendar.get(Calendar.MINUTE);
 
+        yearAndDay = calendar.get(Calendar.DAY_OF_YEAR) + calendar.get(Calendar.YEAR) * 1000;
+
         //calculate lastPlayedTime in double format
         lastPlayedTime = date * 10000 + hour * 100 + mins;
 
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        currTime = sdf.format(new Date());
+        if(shouldUpdate) {
+            currTime = sdf.format(new Date(calendar.getTimeInMillis()));
+        } else {
+            currTime = sdf.format(new Date(mockMillis));
+        }
     }
 
     /**
@@ -152,6 +165,22 @@ public class FlashbackManager {
     }
 
     //getters
+    public boolean shouldUpdate() {
+        return shouldUpdate;
+    }
+
+    public void setShouldUpdate(boolean shouldUpdate) {
+        this.shouldUpdate = shouldUpdate;
+    }
+
+    public void setMockMillis(long millis) {
+        this.mockMillis = millis;
+    }
+
+    public long getMockMillis() {
+        return mockMillis;
+    }
+
     public int getDayOfWeek() {
         return dayOfWeek;
     }
@@ -164,12 +193,21 @@ public class FlashbackManager {
         return lastPlayedTime;
     }
 
+    public int getYearAndDay() {
+        return yearAndDay;
+    }
+
     public String getAddressKey() {
         return addressKey;
     }
 
     public String getCurrTime() {
         return currTime;
+    }
+
+    public void setCurrTime(long millis) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        currTime = sdf.format(new Date(millis));
     }
     public double getLongitude() {
         return longitude;

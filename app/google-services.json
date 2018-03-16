@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "518276155353",
+    "firebase_url": "https://flashbackmp-6338a.firebaseio.com",
+    "project_id": "flashbackmp-6338a",
+    "storage_bucket": "flashbackmp-6338a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518276155353:android:810f33462ec29d3f",
+        "android_client_info": {
+          "package_name": "com.example.liam.flashbackplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "518276155353-0tmec0oiuaj4dcvcp93te316e04b0dsn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.liam.flashbackplayer",
+            "certificate_hash": "16c42d58a450f7e11ab66783ead840c85baf791e"
+          }
+        },
+        {
+          "client_id": "518276155353-22en1lct689bgt5a7grr1ftn2qjj71hq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBsIpCCaMvfg6zQiKa3tGzDEBllWRhEpA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "518276155353-22en1lct689bgt5a7grr1ftn2qjj71hq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2011 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2011 The Android Open Source Project
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
@@ -12,39 +11,51 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal"
-              android:gravity="center_vertical"
-              android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-              android:paddingEnd="12dip"
-              android:minHeight="?attr/listPreferredItemHeightSmall"
-              android:background="@android:color/transparent">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:orientation="horizontal"
+    android:paddingEnd="12dip"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="vertical">
 
-        <TextView android:id="@android:id/text1"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:textAppearance="?attr/textAppearanceListItem"
-                  android:textColor="?attr/textColorAlertDialogListItem"
-                  android:gravity="center_vertical|start"
-                  android:singleLine="true"
-                  android:ellipsize="marquee" />
+        <TextView
+            android:id="@android:id/text1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical|start"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceListItem"
+            android:textColor="?android:attr/textColorAlertDialogListItem" />
 
-        <TextView android:id="@android:id/text2"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:textAppearance="?attr/textAppearanceListItemSecondary"
-                  android:textColor="?attr/textColorAlertDialogListItem"
-                  android:gravity="center_vertical|start"
-                  android:singleLine="true"
-                  android:ellipsize="marquee" />
+        <TextView
+            android:id="@android:id/text2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical|start"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceListItemSecondary"
+            android:textColor="?android:attr/textColorAlertDialogListItem" />
+
+        <TextView
+            android:id="@+id/text3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical|start"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceListItemSecondary"
+            android:textColor="?android:attr/textColorAlertDialogListItem" />
 
     </LinearLayout>
 
@@ -55,6 +66,6 @@
         android:clickable="true"
         android:focusable="false"
         android:gravity="center_vertical|center_horizontal"
-        android:src="@drawable/ic_add"/>
+        android:src="@drawable/ic_add" />
 
 </LinearLayout>

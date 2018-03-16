@@ -15,7 +15,11 @@ public class LocalSong implements Song {
     private String source;
     private String artist;
     private String albumName;
+    private String url;
     private int length; //length in milliseconds
+
+    private String id;
+    private String playedBy;
 
     private int[] timePeriod; // period of a day, declared to be an array of size 3
     //5am-10:59am, 11am-4:49pm, and 5pm-4:49am
@@ -30,10 +34,11 @@ public class LocalSong implements Song {
 
     /**
      * Constructor that pass all the songs info and store it to here and can be used after
-     * @param name of the song
-     * @param source of the song
-     * @param artist of the song
-     * @param length of the song
+     *
+     * @param name      of the song
+     * @param source    of the song
+     * @param artist    of the song
+     * @param length    of the song
      * @param albumName of the song
      */
     public LocalSong(String name, String source, String artist, int length, String albumName) {
@@ -42,19 +47,29 @@ public class LocalSong implements Song {
         this.artist = artist;
         this.length = length;
         this.albumName = albumName;
+        this.id = name + "=" + albumName;
 
         this.timePeriod = new int[3];
         this.day = new int[7];
         this.locations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
         this.ranking = 0;
+
+        this.url = "www.test.com";
+    }
+
+    public LocalSong(String name, String id, String url) {
+        this.name = name;
+        this.id = id;
+        this.url = url;
     }
 
     /**
      * This is the function able to update the Meta date for the songs such as locaton, time ect.
-     * @param loc of the song being played
-     * @param dayOfweek time that played
-     * @param hour that played
+     *
+     * @param loc          of the song being played
+     * @param dayOfweek    time that played
+     * @param hour         that played
      * @param lastPlayTime that song being played
      */
     @Override
@@ -76,6 +91,7 @@ public class LocalSong implements Song {
 
     /**
      * set the preferenct with the given int
+     *
      * @param pref that want to set
      */
     @Override
@@ -93,6 +109,7 @@ public class LocalSong implements Song {
 
     /**
      * Return the songs ranking
+     *
      * @return the ranking of the song that call this function
      */
     @Override
@@ -100,8 +117,13 @@ public class LocalSong implements Song {
         return ranking;
     }
 
+    public void setRanking(int ranking) {
+        this.ranking = ranking;
+    }
+
     /**
      * return the name of the song
+     *
      * @return name of the song
      */
     @Override
@@ -111,6 +133,7 @@ public class LocalSong implements Song {
 
     /**
      * return the file name of song
+     *
      * @return file name of the song
      */
     @Override
@@ -120,6 +143,7 @@ public class LocalSong implements Song {
 
     /**
      * return the artist of the song
+     *
      * @return artist of the song
      */
     @Override
@@ -129,6 +153,7 @@ public class LocalSong implements Song {
 
     /**
      * returnt the length of the song
+     *
      * @return length of the song
      */
     @Override
@@ -138,6 +163,7 @@ public class LocalSong implements Song {
 
     /**
      * retunr the album name of the song
+     *
      * @return album name of the song
      */
     @Override
@@ -147,6 +173,7 @@ public class LocalSong implements Song {
 
     /**
      * get the day of the song that being played
+     *
      * @return day
      */
     public int[] getDay() {
@@ -155,6 +182,7 @@ public class LocalSong implements Song {
 
     /**
      * Get the time period of the song
+     *
      * @return song period
      */
     public int[] getTimePeriod() {
@@ -163,6 +191,7 @@ public class LocalSong implements Song {
 
     /**
      * Return the Arraylist that store the location the song being played
+     *
      * @return arraylist location
      */
     @Override
@@ -172,6 +201,7 @@ public class LocalSong implements Song {
 
     /**
      * Get the preference of the song
+     *
      * @return song preference
      */
     @Override
@@ -184,14 +214,14 @@ public class LocalSong implements Song {
      */
     @Override
     public void changePreference() {
-        switch(this.preference) {
-            case(Song.DISLIKE):
+        switch (this.preference) {
+            case (Song.DISLIKE):
                 this.preference = Song.NEUTRAL;
                 break;
-            case(Song.NEUTRAL):
+            case (Song.NEUTRAL):
                 this.preference = Song.FAVORITE;
                 break;
-            case(Song.FAVORITE):
+            case (Song.FAVORITE):
                 this.preference = Song.DISLIKE;
                 break;
             default:
@@ -201,6 +231,7 @@ public class LocalSong implements Song {
 
     /**
      * get the last play time of the song
+     *
      * @return song's last play time
      */
     @Override
@@ -219,8 +250,26 @@ public class LocalSong implements Song {
         return this.name.compareTo(other.getName());
     }
 
-    public LocalSong(){
+    public LocalSong() {
         // default constructor, just for testing
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public String getPlayedBy() {
+        return playedBy;
+    }
+
+    public void setPlayedBy(String playedBy) {
+        this.playedBy = playedBy;
     }
 }
 
