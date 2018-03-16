@@ -11,6 +11,7 @@ import android.webkit.MimeTypeMap;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class MusicLoader {
     private MediaMetadataRetriever mmr;
     private HashMap<String, Album> albumMap;
+    private ArrayList<Song> mList;
     private Activity activity;
     private File lastDownloadedFile;
 
@@ -35,24 +37,7 @@ public class MusicLoader {
         this.mmr = retriever;
         this.activity = activity;
         HashMap<String, Album> stored = prefs.getAlbumMap("album map");
-
-        if (stored != null) {
-            for (Map.Entry<String, Album> pair : stored.entrySet()) {
-                try {
-                    Album album = pair.getValue();
-                    int[] checkTime = album.getSongList().get(0).getTimePeriod();
-                    int[] checkDay = album.getSongList().get(0).getDay();
-                    if (checkTime == null || checkDay == null) {
-                        prefs.remove("album map");
-                        album = null;
-                    }
-                } catch (Exception e) {
-                    break;
-                }
-                break;
-            }
-        }
-        this.albumMap = (stored == null) ? new HashMap<String, Album>() : stored;
+        albumMap = (stored == null) ? new HashMap<String, Album>() : stored;
     }
 
     /**
@@ -136,7 +121,7 @@ public class MusicLoader {
      * Load metadata from songs and construct albums
      * @param song file that want to load for albums
      */
-    private void populateAlbumWithSong(File song) {
+    public void populateAlbumWithSong(File song) {
         try {
             FileInputStream fis = new FileInputStream(song);
             FileDescriptor fd = fis.getFD();
@@ -221,6 +206,38 @@ public class MusicLoader {
      * Return the hash map of the album map that you build
      * @return album hash map
      */
+
+    public void generateMList() {
+        mList = new ArrayList<>();
+        ArrayList<Song> toRemove = new ArrayList<>();
+        ArrayList<String> toRemove2 = new ArrayList<>();
+
+        for (Album toAdd : albumMap.values()) {
+            for(Song song : toAdd.getSongList()) {
+                if(!new File(song.getSource()).exists()) {
+                    toRemove.add(song);
+                }
+            }
+            for(Song remove : toRemove) {
+                toAdd.removeSong(remove);
+            }
+
+            toRemove = toAdd.getSongList();
+            if(toRemove.size() == 0) {
+                toRemove2.add(toAdd.getName());
+            } else {
+                mList.addAll(toAdd.getSongList());
+            }
+        }
+        for(String remove : toRemove2) {
+            albumMap.remove(remove);
+        }
+    }
+
+    public ArrayList<Song> getmList() {
+        return this.mList;
+    }
+
     public HashMap<String, Album> getAlbumMap() {
         return this.albumMap;
     }
