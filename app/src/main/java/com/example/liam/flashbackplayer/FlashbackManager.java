@@ -22,6 +22,8 @@ public class FlashbackManager {
     private int hour;
     private int mins;
     private long lastPlayedTime;
+    private boolean shouldUpdate;
+    private long mockMillis;
 
     private int yearAndDay;
 
@@ -38,6 +40,7 @@ public class FlashbackManager {
      */
     public FlashbackManager(Context context) {
         this.context = context;
+        this.shouldUpdate = true;
     }
 
 
@@ -135,7 +138,11 @@ public class FlashbackManager {
 
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        currTime = sdf.format(new Date());
+        if(shouldUpdate) {
+            currTime = sdf.format(new Date(calendar.getTimeInMillis()));
+        } else {
+            currTime = sdf.format(new Date(mockMillis));
+        }
     }
 
     /**
@@ -158,6 +165,22 @@ public class FlashbackManager {
     }
 
     //getters
+    public boolean shouldUpdate() {
+        return shouldUpdate;
+    }
+
+    public void setShouldUpdate(boolean shouldUpdate) {
+        this.shouldUpdate = shouldUpdate;
+    }
+
+    public void setMockMillis(long millis) {
+        this.mockMillis = millis;
+    }
+
+    public long getMockMillis() {
+        return mockMillis;
+    }
+
     public int getDayOfWeek() {
         return dayOfWeek;
     }

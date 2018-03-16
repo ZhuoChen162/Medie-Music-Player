@@ -43,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
     public static final int MODE_ALBUM = 1;
     public static final int MODE_FLASHBACK = 2;
-    public static final int MODE_HISTORY = 3;
     private static final int GOOGLE_SIGN_IN = 9002;
+    private static final int MOCK_TIME = 9003;
+
     //added modes for display by artist and display by Favorites
     public static final int MODE_ARTIST = 4;
     public static final int MODE_FAVORITE = 5;
@@ -164,6 +165,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, GoogleLoginActivity.class);
                 startActivityForResult(intent, GOOGLE_SIGN_IN);
+            }
+        });
+
+        Button mockTimeBtn = findViewById(R.id.btnMock);
+        mockTimeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, MockTimeActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(MockTimeActivity.EXTRA_UPDATE, flashbackManager.shouldUpdate());
+                bundle.putLong(MockTimeActivity.EXTRA_MILLIS, flashbackManager.getMockMillis());
+                intent.putExtras(bundle);
+                startActivityForResult(intent, MOCK_TIME);
             }
         });
 
@@ -409,6 +423,16 @@ public class MainActivity extends AppCompatActivity {
                 emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
 
                 fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
+            }
+        }
+
+        if(requestCode == MOCK_TIME) {
+            if (resultCode == RESULT_OK && data != null) {
+                boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
+                long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
+                Log.w("GOT HERE", "got data back. Millis: " + millis + ", shouldUpdate: " + shouldUpdate);
+                flashbackManager.setShouldUpdate(shouldUpdate);
+                flashbackManager.setMockMillis(millis);
             }
         }
     }
