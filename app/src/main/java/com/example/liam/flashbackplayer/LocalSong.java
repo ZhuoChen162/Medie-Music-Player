@@ -62,6 +62,7 @@ public class LocalSong implements Song {
         this.name = name;
         this.id = id;
         this.url = url;
+        this.albumName = null;
     }
 
     /**

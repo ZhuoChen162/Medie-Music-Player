@@ -2,7 +2,10 @@ package com.example.liam.flashbackplayer;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -10,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     //activity request codes
     private static final int GOOGLE_SIGN_IN = 9002;
     private static final int MOCK_TIME = 9003;
+    private static final int DOWNLOAD_MUSIC = 9004;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_delete, R.drawable.ic_add, R.drawable.ic_checkmark_sq};
 
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected static HashMap<String, String> emailAndName;
     protected static String myEmail;
+    private BroadcastReceiver onComplete;
 
     protected MediaPlayer mediaPlayer;
     protected SharedPreferenceDriver prefs;
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     protected UIManager uiManager;
     protected MusicController musicController;
     protected AppMediator appMediator;
+    protected MusicLoader loader;
 
     private UrlList urlList;
     private FirebaseService fbs;
@@ -89,7 +94,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        onComplete = new BroadcastReceiver() {
+            public void onReceive(Context ctxt, Intent intent) {
+                File downloadedFile = loader.getLastDownloadedFile();
+                //do something with the last downloaded file here...
+            }
+        };
+        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         urlList = new UrlList();
         fbs = new FirebaseService(urlList);
 
@@ -167,16 +178,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button mockTimeBtn = (Button) findViewById(R.id.btnMock);
-        mockTimeBtn.setOnClickListener(new View.OnClickListener() {
+        Button downloadBtn = (Button) findViewById(R.id.btnDownload);
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, MockTimeActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putBoolean(MockTimeActivity.EXTRA_UPDATE, flashbackManager.shouldUpdate());
-                bundle.putLong(MockTimeActivity.EXTRA_MILLIS, flashbackManager.getMockMillis());
-                intent.putExtras(bundle);
-                startActivityForResult(intent, MOCK_TIME);
+                Intent intent = new Intent(MainActivity.this, DownloadActivity.class);
+                startActivityForResult(intent, DOWNLOAD_MUSIC);
             }
         });
     }
@@ -229,6 +236,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         appMediator.release();
+        unregisterReceiver(onComplete);
+
     }
 
     /**
@@ -287,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
-        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs, this);
+        loader = new MusicLoader(new MediaMetadataRetriever(), prefs, this);
         loader.init();
         albumMap = loader.getAlbumMap();
         masterList = new ArrayList<Song>();
@@ -376,6 +385,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle item selection
         switch (itemId) {
+            case R.id.btn_settings:
+                Intent intent = new Intent(MainActivity.this, MockTimeActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(MockTimeActivity.EXTRA_UPDATE, flashbackManager.shouldUpdate());
+                bundle.putLong(MockTimeActivity.EXTRA_MILLIS, flashbackManager.getMockMillis());
+                intent.putExtras(bundle);
+                startActivityForResult(intent, MOCK_TIME);
+                return true;
+
             case R.id.btn_history:
                 prevMode = displayMode;
                 viewHistory();
@@ -432,9 +450,15 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK && data != null) {
                 boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
                 long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
-                Log.w("GOT HERE", "got data back. Millis: " + millis + ", shouldUpdate: " + shouldUpdate);
                 flashbackManager.setShouldUpdate(shouldUpdate);
                 flashbackManager.setMockMillis(millis);
+            }
+        }
+
+        if(requestCode == DOWNLOAD_MUSIC) {
+            if (resultCode == RESULT_OK && data != null) {
+                String url = data.getStringExtra(DownloadActivity.EXTRA_URL);
+                loader.downloadFromUrl(Uri.parse(url));
             }
         }
     }

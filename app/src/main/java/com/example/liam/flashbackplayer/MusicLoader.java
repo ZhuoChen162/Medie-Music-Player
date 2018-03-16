@@ -24,6 +24,7 @@ public class MusicLoader {
     private MediaMetadataRetriever mmr;
     private HashMap<String, Album> albumMap;
     private Activity activity;
+    private File lastDownloadedFile;
 
     /**
      * mucicLoader constuctor that pass two variable and set up the music
@@ -191,13 +192,15 @@ public class MusicLoader {
      * @return id reference of the songs
      */
 
-    private long DownloadSongs (Uri uri) {
-
-        long downloadReference;
-
+    public void downloadFromUrl (Uri uri) {
         // Create request for android download manager
         DownloadManager downloadManager = (DownloadManager)activity.getSystemService(DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(uri);
+        String resource = uri.getLastPathSegment();
+        String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+        if(MimeTypeMap.getFileExtensionFromUrl(resource).equals("")) {
+            resource = resource + "." + extension;
+        }
 
         //Setting title of request
         request.setTitle("Data Download");
@@ -206,12 +209,12 @@ public class MusicLoader {
         request.setDescription("Android Data download using DownloadManager.");
 
         //Set the local destination for the downloaded file to a path
-        File destinationFile = new File(getDefaultMusicDirectory(), "temp");
+        File destinationFile = new File(getDefaultMusicDirectory(), resource);
         request.setDestinationUri(Uri.fromFile(destinationFile));
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         //Enqueue download and save into referenceId
-        downloadReference = downloadManager.enqueue(request);
-
-        return downloadReference;
+        downloadManager.enqueue(request);
+        this.lastDownloadedFile = destinationFile;
     }
 
     /**
@@ -220,5 +223,9 @@ public class MusicLoader {
      */
     public HashMap<String, Album> getAlbumMap() {
         return this.albumMap;
+    }
+
+    public File getLastDownloadedFile() {
+        return this.lastDownloadedFile;
     }
 }

@@ -23,14 +23,14 @@
         android:text="Sign In"
         android:textColor="@color/colorAccent"
         app:layout_constraintStart_toEndOf="@id/btnPlayer"
-        app:layout_constraintEnd_toStartOf="@+id/btnMock"
+        app:layout_constraintEnd_toStartOf="@+id/btnDownload"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btnMock"
+        android:id="@+id/btnDownload"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:text="Mock Time"
+        android:text="Download"
         android:textColor="@color/colorAccent"
         app:layout_constraintEnd_toStartOf="@+id/btnFlashback"
         app:layout_constraintStart_toEndOf="@+id/btnSignIn"

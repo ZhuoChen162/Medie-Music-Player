@@ -32,7 +32,8 @@
         <activity
             android:name=".GoogleLoginActivity"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".MockTimeActivity"></activity>
+        <activity android:name=".MockTimeActivity" />
+        <activity android:name=".DownloadActivity"></activity>
     </application>
 
 </manifest>
