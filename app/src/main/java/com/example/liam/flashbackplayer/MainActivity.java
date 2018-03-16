@@ -90,9 +90,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        urlList = new UrlList();
-        fbs = new FirebaseService(urlList);
-
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -169,15 +166,12 @@ public class MainActivity extends AppCompatActivity {
 
         // The player starts at player mode, so set the button color to gray
         playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-
-//        onEnterVibeMode();
     }
 
     protected void onEnterVibeMode() {
-        fbs.makeCloudChangelist(urlList.getUrlMap(), urlList.getCloudChange());
-        urlList.makeLocalChangelist(masterList);
+        fbs.makeCloudChangelist(urlList.getUrlMap());
 
-        fbs.updateCloudSongList(urlList.getLocalChange());
+        fbs.updateCloudSongList(urlList.getUrlMap());
     }
 
     /**
@@ -192,9 +186,6 @@ public class MainActivity extends AppCompatActivity {
             }
             if (history != null) {
                 prefs.saveObjectWithSongs(history, "history");
-            }
-            if (urlList != null) {
-                prefs.saveObject(urlList.getUrlMap(), "urlList");
             }
             prefs.saveInt(displayMode, "mode");
         }
@@ -295,16 +286,13 @@ public class MainActivity extends AppCompatActivity {
             history = new ArrayList<History>();
         }
 
-
         history = prefs.getHistory("history");
         if (history == null) {
             history = new ArrayList<>();
         }
 
-        Map<String, String> storedUrlList = prefs.getUrlList("urlList");
-        if (storedUrlList != null) {
-            urlList.addToUrlMap(storedUrlList);
-        }
+        urlList = new UrlList(masterList);
+        fbs = new FirebaseService(urlList);
 
         if (displayMode == MODE_FLASHBACK) {
             GPSTracker gps = new GPSTracker(this);
@@ -316,6 +304,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         uiManager.populateUI(displayMode);
+
+        onEnterVibeMode();
     }
 
     private void viewHistory() {
