@@ -11,7 +11,6 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.PriorityQueue;
 
 
@@ -22,6 +21,8 @@ public class FlashbackManager {
     private int hour;
     private int mins;
     private long lastPlayedTime;
+    private boolean shouldUpdate;
+    private long mockMillis;
 
     private int yearAndDay;
 
@@ -38,6 +39,7 @@ public class FlashbackManager {
      */
     public FlashbackManager(Context context) {
         this.context = context;
+        this.shouldUpdate = true;
     }
 
 
@@ -122,6 +124,9 @@ public class FlashbackManager {
             Log.e("GEOCODER", e.getMessage());
         }
 
+        if(!shouldUpdate) {
+            calendar.setTime(new Date(mockMillis));
+        }
         //get time info to store
         dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         date = calendar.get(Calendar.DATE);
@@ -135,7 +140,7 @@ public class FlashbackManager {
 
         //get current time to display
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        currTime = sdf.format(new Date());
+        currTime = sdf.format(new Date(calendar.getTimeInMillis()));
     }
 
     /**
@@ -158,6 +163,22 @@ public class FlashbackManager {
     }
 
     //getters
+    public boolean shouldUpdate() {
+        return shouldUpdate;
+    }
+
+    public void setShouldUpdate(boolean shouldUpdate) {
+        this.shouldUpdate = shouldUpdate;
+    }
+
+    public void setMockMillis(long millis) {
+        this.mockMillis = millis;
+    }
+
+    public long getMockMillis() {
+        return mockMillis;
+    }
+
     public int getDayOfWeek() {
         return dayOfWeek;
     }

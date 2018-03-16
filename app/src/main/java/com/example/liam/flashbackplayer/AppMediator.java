@@ -61,7 +61,7 @@ public class AppMediator {
                     && musicController.getCurrSong() < MainActivity.perAlbumList.size()
                     && musicController.getPlayMode() == displayMode
                     && MainActivity.perAlbumList.get(musicController.getCurrSong()).getAlbumName().equals(name));
-        } else if (displayMode == MainActivity.MODE_FLASHBACK) {
+        } else if (displayMode == MainActivity.MODE_VIBE) {
             return (musicController.getPlayMode() != displayMode);
         }
         return false;
@@ -76,7 +76,7 @@ public class AppMediator {
             } else {
                 musicController.playSong(MainActivity.perAlbumList.get(musicController.getCurrSong()));
             }
-        } else if (displayMode == MainActivity.MODE_FLASHBACK) {
+        } else if (displayMode == MainActivity.MODE_VIBE) {
             musicController.setCurrSong(0);
             if (MainActivity.flashbackList.size() != 0) {
                 musicController.playSong(MainActivity.flashbackList.get(musicController.getCurrSong()));
@@ -99,7 +99,7 @@ public class AppMediator {
             Log.i("SONG DONE", MainActivity.perAlbumList.get(musicController.getCurrSong()).getName());
             musicController.skipSong(1);
         }
-        if (playMode == MainActivity.MODE_FLASHBACK) {
+        if (playMode == MainActivity.MODE_VIBE) {
             Log.i("SONG DONE", MainActivity.flashbackList.get(musicController.getCurrSong()).getName());
 
             //update curr loc and time to implement the ranking algorihtm

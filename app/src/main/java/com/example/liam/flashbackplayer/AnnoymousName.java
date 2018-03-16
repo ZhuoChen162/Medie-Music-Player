@@ -7,7 +7,6 @@ class AnnoymousName {
 
     LinkedList<String> animalName;
     HashMap<String, String> animalNameHM;    //email --- animal
-    int count = 0;
 
     AnnoymousName() {
         animalName = new LinkedList<>();
