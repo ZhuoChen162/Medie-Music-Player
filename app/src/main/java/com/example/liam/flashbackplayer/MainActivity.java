@@ -42,13 +42,14 @@ import java.util.PriorityQueue;
 public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
     public static final int MODE_ALBUM = 1;
-    public static final int MODE_FLASHBACK = 2;
-    private static final int GOOGLE_SIGN_IN = 9002;
-    private static final int MOCK_TIME = 9003;
-
+    public static final int MODE_VIBE = 2;
     //added modes for display by artist and display by Favorites
     public static final int MODE_ARTIST = 4;
     public static final int MODE_FAVORITE = 5;
+
+    //activity request codes
+    private static final int GOOGLE_SIGN_IN = 9002;
+    private static final int MOCK_TIME = 9003;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_delete, R.drawable.ic_add, R.drawable.ic_checkmark_sq};
 
@@ -66,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
     protected boolean isAlbumExpanded;
 
     protected int currSong;
-    protected int playMode;
     protected int prevMode;
     protected int displayMode;
 
@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
     private UrlList urlList;
     private FirebaseService fbs;
-    private Button signInBtn;
 
     /**
      * Override the oncreate method to handle the basic button function such as
@@ -132,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 playerMode.getBackground().clearColorFilter();
                 flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 prevMode = displayMode;
-                if (appMediator.getPlayMode() != MODE_FLASHBACK) {
+                if (appMediator.getPlayMode() != MODE_VIBE) {
                     flashbackList.clear();
                     GPSTracker gps = new GPSTracker(v.getContext());
 
@@ -150,16 +149,16 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     //update UI
-                    displayMode = MODE_FLASHBACK;
+                    displayMode = MODE_VIBE;
                     uiManager.populateUI(displayMode);
                 } else {
-                    displayMode = MODE_FLASHBACK;
+                    displayMode = MODE_VIBE;
                     uiManager.populateUI(displayMode);
                 }
             }
         });
 
-        Button signInBtn = findViewById(R.id.btnSignIn);
+        Button signInBtn = (Button) findViewById(R.id.btnSignIn);
         signInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -168,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button mockTimeBtn = findViewById(R.id.btnMock);
+        Button mockTimeBtn = (Button) findViewById(R.id.btnMock);
         mockTimeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -180,10 +179,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, MOCK_TIME);
             }
         });
-
-        // The player starts at player mode, so set the button color to gray
-        //playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-
     }
 
     protected void onEnterVibeMode() {
@@ -292,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
-        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
+        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs, this);
         loader.init();
         albumMap = loader.getAlbumMap();
         masterList = new ArrayList<Song>();
@@ -315,7 +310,11 @@ public class MainActivity extends AppCompatActivity {
 
         onEnterVibeMode();
 
-        if (displayMode == MODE_FLASHBACK) {
+        Button playerMode = (Button) findViewById(R.id.btnPlayer);
+        Button flashbackMode = (Button) findViewById(R.id.btnFlashback);
+        if (displayMode == MODE_VIBE) {
+            playerMode.getBackground().clearColorFilter();
+            flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
             GPSTracker gps = new GPSTracker(this);
             flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
             flashbackManager.rankSongs(masterList);
@@ -323,6 +322,9 @@ public class MainActivity extends AppCompatActivity {
             if (!pq.isEmpty()) {
                 flashbackList.add(pq.poll());
             }
+        } else {
+            flashbackMode.getBackground().clearColorFilter();
+            playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         }
         uiManager.populateUI(displayMode);
     }
@@ -437,52 +439,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * This is the method that used to download the songs by its URL
-     * To use this method, first parse the URL to URI and then pass to it
-     * and then it will download the song for you
-     * @param uri song's uri
-     * @param songName name that you want to store
-     * @return id reference of the songs
-     */
-
-    private long DownloadSongs (Uri uri, String songName) {
-
-        long downloadReference;
-
-        // Create request for android download manager
-        DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-
-        //Setting title of request
-        request.setTitle("Data Download");
-
-        //Setting description of request
-        request.setDescription("Android Data download using DownloadManager.");
-
-        //Set the local destination for the downloaded file to a path
-        File destinationFile = new File("/storage/emulated/0/Music", songName);
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.e("Permission error", "You have permission");
-                //set the download song's path and name of the song
-
-            }else {
-
-                Log.e("Permission error","You have asked for permission");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-
-            }
-        }
-        else { //you dont need to worry about these stuff below api level 23
-            Log.e("Permission error","You already have the permission");
-            request.setDestinationUri(Uri.fromFile(destinationFile));
-        }
-        request.setDestinationUri(Uri.fromFile(destinationFile));
-        //Enqueue download and save into referenceId
-        downloadReference = downloadManager.enqueue(request);
-
-        return downloadReference;
-    }
 }

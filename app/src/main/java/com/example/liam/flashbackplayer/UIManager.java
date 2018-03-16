@@ -2,8 +2,6 @@ package com.example.liam.flashbackplayer;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +13,8 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class UIManager {
     private Activity activity;
@@ -223,7 +218,7 @@ public class UIManager {
                 break;
 
 
-            case (MainActivity.MODE_FLASHBACK):
+            case (MainActivity.MODE_VIBE):
                 ArrayAdapter<Song> adapter4 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {

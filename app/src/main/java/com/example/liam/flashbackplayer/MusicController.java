@@ -60,7 +60,7 @@ public class MusicController {
         Drawable playImg = activity.getResources().getDrawable(R.drawable.ic_play);
         Button playPause = (Button) activity.findViewById(R.id.buttonPlay);
         ArrayList<Song> songs = new ArrayList<Song>();
-        if (playMode == MainActivity.MODE_FLASHBACK) {
+        if (playMode == MainActivity.MODE_VIBE) {
             songs = MainActivity.flashbackList;
         } else if (playMode == MainActivity.MODE_ALBUM) {
             songs = MainActivity.perAlbumList;
