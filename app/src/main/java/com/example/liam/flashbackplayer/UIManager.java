@@ -2,6 +2,7 @@ package com.example.liam.flashbackplayer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -314,12 +315,13 @@ public class UIManager {
      * @param loc      when play it
      * @param currTime time when play the song
      */
-    public void displayInfo(final String name, final String album, final String loc, final String currTime) {
+    public void displayInfo(final String name, final String album, final String loc, final String currTime, final String playByName) {
 
         final TextView songName = (TextView) activity.findViewById(R.id.SongName);
         final TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
         final TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
         final TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
+        final TextView lastPlayedBy = (TextView) activity.findViewById(R.id.lastPlayedBy);
 
         activity.runOnUiThread(new Runnable() {
             public void run() {
@@ -327,7 +329,13 @@ public class UIManager {
                 AlbumName.setText("Album: " + album);
                 currentTime.setText(currTime);
                 currentLocation.setText(loc);
+                lastPlayedBy.setText(playByName);
 
+                if(playByName.equals("You")) {
+                    lastPlayedBy.setTypeface(null, Typeface.ITALIC);
+                } else {
+                    lastPlayedBy.setTypeface(null, Typeface.NORMAL);
+                }
             }
 
         });

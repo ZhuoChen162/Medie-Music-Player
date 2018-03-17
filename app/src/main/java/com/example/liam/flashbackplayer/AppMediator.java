@@ -16,6 +16,7 @@ public class AppMediator {
     private UIManager uiManager;
     private FirebaseService fbs;
     private Activity activity;
+    private AnonymousName anonymousName;
 
     private String userId;
 
@@ -25,6 +26,7 @@ public class AppMediator {
         this.uiManager = uim;
         this.fbs = fbs;
         this.activity = act;
+        this.anonymousName = new AnonymousName();
         this.flashbackManager.setAppMediator(this);
         this.musicController.setAppMediator(this);
         this.uiManager.setAppMediator(this);
@@ -122,7 +124,17 @@ public class AppMediator {
     public void startPlay(Song playing, GPSTracker gps, Calendar cal) {
         //update curr loc and time, for display and storage
         flashbackManager.updateLocAndTime(gps, cal);
-        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime());
+        //Get last-played-by info
+        String playByName = "You";
+        if(MainActivity.myEmail .equals( playing.getPlayedBy()) ) {
+            playByName = "You";
+        } else if( MainActivity.emailAndName.containsKey(playing.getPlayedBy())) {
+            playByName = MainActivity.emailAndName.get(playing.getPlayedBy());
+        } else {
+            playByName = anonymousName.getAnonmyousName(playing.getPlayedBy());
+        }
+
+        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime(), playByName);
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 Drawable pauseImg = activity.getResources().getDrawable(R.drawable.ic_pause);

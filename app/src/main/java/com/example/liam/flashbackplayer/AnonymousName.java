@@ -3,12 +3,12 @@ package com.example.liam.flashbackplayer;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-class AnnoymousName {
+class AnonymousName {
 
     LinkedList<String> animalName;
     HashMap<String, String> animalNameHM;    //email --- animal
 
-    AnnoymousName() {
+    AnonymousName() {
         animalName = new LinkedList<>();
         animalName.push("Dog");
         animalName.push("Cat");
@@ -28,15 +28,15 @@ class AnnoymousName {
     }
 
     //pass in email, return animal name 1 to 1
-    String getAnnomyousName(String AnnoymousEmail) {
-        //check if has this AnnoymousEmail
-        if (animalNameHM.containsKey(AnnoymousEmail))
-            return "Annoymous " + animalNameHM.get(AnnoymousEmail);
+    String getAnonmyousName(String AnonymousEmail) {
+        //check if has this AnonymousEmail
+        if (animalNameHM.containsKey(AnonymousEmail))
+            return "Anonymous " + animalNameHM.get(AnonymousEmail);
         else {
             //assign to an animal and add to HM (key email, value: animal name)
             String name = animalName.pop();
-            animalNameHM.put(AnnoymousEmail, name);
-            return "Annoymous" + name;
+            animalNameHM.put(AnonymousEmail, name);
+            return "Anonymous" + name;
         }
     }
 }
