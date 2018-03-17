@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,7 +34,6 @@ import java.util.Calendar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 
 /**
@@ -138,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
         flashbackMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                onEnterVibeMode();
+
                 playerMode.getBackground().clearColorFilter();
                 flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 prevMode = displayMode;
@@ -301,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
         uiManager = new UIManager(this);
 
         urlList = new UrlList(masterList);
-        fbs = new FirebaseService(urlList);
+        fbs = new FirebaseService(urlList, loader);
 
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
@@ -327,8 +327,6 @@ public class MainActivity extends AppCompatActivity {
             playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         }
         uiManager.populateUI(displayMode);
-
-        onEnterVibeMode();
     }
 
     private void viewHistory() {
@@ -452,7 +450,7 @@ public class MainActivity extends AppCompatActivity {
             case DOWNLOAD_MUSIC:
                 if (resultCode == RESULT_OK && data != null) {
                     String url = data.getStringExtra(DownloadActivity.EXTRA_URL);
-                    loader.downloadFromUrl(Uri.parse(url));
+                    loader.downloadFromUri(Uri.parse(url));
                 }
                 break;
         }

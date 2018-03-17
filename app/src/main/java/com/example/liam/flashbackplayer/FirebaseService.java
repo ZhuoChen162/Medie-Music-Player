@@ -1,5 +1,8 @@
 package com.example.liam.flashbackplayer;
 
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
@@ -8,18 +11,23 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public class FirebaseService {
     private FirebaseDatabase database;
+    protected MusicLoader loader;
+    private MediaMetadataRetriever mmr = new MediaMetadataRetriever();
     private UrlList urlList;
 
-    public FirebaseService(UrlList urlList) {
+    public FirebaseService(UrlList urlList, MusicLoader loader) {
         database = FirebaseDatabase.getInstance();
         this.urlList = urlList;
+        this.loader = loader;
     }
 
     // Get the songs that exist only on the cloud
@@ -36,9 +44,14 @@ public class FirebaseService {
                     }
                 }
 
-                //Download songs here using changeList
                 for (Map.Entry<String, String> pair : changeList.entrySet()) {
-                    Log.i("cloudChange", pair.toString());
+                    String songId = pair.getKey();
+                    String[] parts = songId.split(":");
+                    Song downloading = new LocalSong(parts[0], parts[1], songId, pair.getValue());
+                    MainActivity.masterList.add(downloading);
+                    loader.addSongToAlbum(downloading);
+
+                    new DownloadSongAsync().execute(downloading);
                 }
             }
 
@@ -120,5 +133,28 @@ public class FirebaseService {
         newHist.child("lon").setValue(loc.longitude);
         newHist.child("day").setValue(yearAndDay);
         newHist.child("user").setValue(userId);
+    }
+
+    class DownloadSongAsync extends AsyncTask<Song, Void, Song> {
+
+        @Override
+        protected Song doInBackground(Song... songs) {
+            Song downloading = songs[0];
+            Uri uri = Uri.parse(downloading.getUrl());
+            File musicFile = loader.downloadFromUri(uri);
+
+            FileInputStream fis = new FileInputStream(musicFile);
+            FileDescriptor fd = fis.getFD();
+            mmr.setDataSource(fd);
+            String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            downloading.setArtist(artist == null ? "Unknown Artist" : artist);
+            downloading.setLength(length == null ? 0 : Integer.parseInt(length));
+
+
+            fis.close();
+            return null;
+        }
     }
 }

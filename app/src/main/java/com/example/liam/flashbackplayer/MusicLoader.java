@@ -28,8 +28,9 @@ public class MusicLoader {
 
     /**
      * mucicLoader constuctor that pass two variable and set up the music
+     *
      * @param retriever it retriever the music for you
-     * @param prefs able to swtich
+     * @param prefs     able to swtich
      */
     public MusicLoader(MediaMetadataRetriever retriever, SharedPreferenceDriver prefs, Activity activity) {
         this.mmr = retriever;
@@ -67,6 +68,7 @@ public class MusicLoader {
 
     /**
      * This is the file to read the music file when call it and return the file after
+     *
      * @return null
      */
     private File getDefaultMusicDirectory() {
@@ -105,6 +107,7 @@ public class MusicLoader {
 
     /**
      * This method is to populate the album map with the given file
+     *
      * @param root file that want to populate
      */
     private void populateAlbumMap(File root) {
@@ -114,7 +117,7 @@ public class MusicLoader {
             try {
                 String extension = MimeTypeMap.getFileExtensionFromUrl(root.getCanonicalPath());
                 extension = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-                if(!extension.equals("") && extension.startsWith("audio")) {
+                if (!extension.equals("") && extension.startsWith("audio")) {
                     populateAlbumWithSong(root);
                 }
             } catch (Exception e) {
@@ -134,6 +137,7 @@ public class MusicLoader {
 
     /**
      * Load metadata from songs and construct albums
+     *
      * @param song file that want to load for albums
      */
     private void populateAlbumWithSong(File song) {
@@ -184,21 +188,37 @@ public class MusicLoader {
         }
     }
 
+    public void addSongToAlbum(Song toAdd) {
+        String albumName = toAdd.getAlbumName();
+
+        if (albumMap.containsKey(albumName)) {
+            Album toEdit = albumMap.get(albumName);
+            if (!toEdit.contains(toAdd.getName())) {
+                toEdit.addSong(toAdd);
+                albumMap.put(albumName, toEdit);
+            }
+        } else {
+            Album newAlbum = new Album(albumName);
+            newAlbum.addSong(toAdd);
+            albumMap.put(albumName, newAlbum);
+        }
+    }
+
     /**
      * This is the method that used to download the songs by its URL
      * To use this method, first parse the URL to URI and then pass to it
      * and then it will download the song for you
+     *
      * @param uri song's uri
      * @return id reference of the songs
      */
-
-    public void downloadFromUrl (Uri uri) {
+    public File downloadFromUri(Uri uri) {
         // Create request for android download manager
-        DownloadManager downloadManager = (DownloadManager)activity.getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = (DownloadManager) activity.getSystemService(DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         String resource = uri.getLastPathSegment();
         String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-        if(MimeTypeMap.getFileExtensionFromUrl(resource).equals("")) {
+        if (MimeTypeMap.getFileExtensionFromUrl(resource).equals("")) {
             resource = resource + "." + extension;
         }
 
@@ -215,10 +235,13 @@ public class MusicLoader {
         //Enqueue download and save into referenceId
         downloadManager.enqueue(request);
         this.lastDownloadedFile = destinationFile;
+
+        return destinationFile;
     }
 
     /**
      * Return the hash map of the album map that you build
+     *
      * @return album hash map
      */
     public HashMap<String, Album> getAlbumMap() {
