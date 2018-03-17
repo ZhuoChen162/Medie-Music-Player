@@ -174,6 +174,7 @@ public class UITests {
     @Test
     public void ms1story4Test() {
         MainActivity main = mActivityTestRule.getActivity();
+
         ListView listView = main.findViewById(R.id.songDisplay);
         View childView = listView.getChildAt(0);
         ImageView favicoView = (ImageView) childView.findViewById(R.id.pref);
@@ -189,6 +190,39 @@ public class UITests {
         assertEquals(main.getResources().getDrawable(R.drawable.ic_delete).getConstantState(), favicoView.getDrawable().getConstantState());
         favico.perform(click());
         assertEquals(main.getResources().getDrawable(R.drawable.ic_add).getConstantState(), favicoView.getDrawable().getConstantState());
+    }
+
+    @Test
+    public void ms2story1Test() {
+        final MainActivity main = mActivityTestRule.getActivity();
+        ListView listView = main.findViewById(R.id.songDisplay);
+
+        //enter album mode
+        ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
+        sortBtn.perform(click());
+        onView(withText("Albums")).perform(click());
+
+        DataInteraction album = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
+        View childView = listView.getChildAt(0);
+        final TextView albumCount = (TextView) childView.findViewById(android.R.id.text2);
+        //ensure that an album is not empty
+        assert(albumCount.getText().charAt(0) != '0');
+
+        //get number of tracks
+        String size = "";
+        int i = 0;
+        while(albumCount.getText().charAt(i) != ' ') {
+            size += albumCount.getText().charAt(i);
+            i++;
+        }
+        int intSize = Integer.parseInt(size);
+        //ensure that all songs in album can be reached
+        album.perform(click());
+        ViewInteraction skipForward = onView(withId(R.id.skipForward));
+        while(main.musicController.isPlaying()) {
+            skipForward.perform(click());
+        }
+        assertEquals(intSize-1, main.musicController.getCurrSong());
     }
 
     @Test
