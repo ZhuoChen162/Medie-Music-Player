@@ -126,12 +126,13 @@ public class AppMediator {
         flashbackManager.updateLocAndTime(gps, cal);
         //Get last-played-by info
         String playByName = "You";
-        if(MainActivity.myEmail .equals( playing.getPlayedBy()) ) {
+        String playedBy = playing.getPlayedBy();
+        if(MainActivity.myEmail.equals(playedBy) || playedBy.equals("")) {
             playByName = "You";
-        } else if( MainActivity.emailAndName.containsKey(playing.getPlayedBy())) {
-            playByName = MainActivity.emailAndName.get(playing.getPlayedBy());
+        } else if(MainActivity.emailAndName.containsKey(playedBy)) {
+            playByName = MainActivity.emailAndName.get(playedBy);
         } else {
-            playByName = anonymousName.getAnonmyousName(playing.getPlayedBy());
+            playByName = anonymousName.getAnonmyousName(playedBy);
         }
 
         uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime(), playByName);

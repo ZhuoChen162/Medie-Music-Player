@@ -9,6 +9,7 @@ class AnonymousName {
     HashMap<String, String> animalNameHM;    //email --- animal
 
     AnonymousName() {
+        animalNameHM = new HashMap<>();
         animalName = new LinkedList<>();
         animalName.push("Dog");
         animalName.push("Cat");
@@ -36,7 +37,7 @@ class AnonymousName {
             //assign to an animal and add to HM (key email, value: animal name)
             String name = animalName.pop();
             animalNameHM.put(AnonymousEmail, name);
-            return "Anonymous" + name;
+            return "Anonymous " + name;
         }
     }
 }

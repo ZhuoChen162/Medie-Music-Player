@@ -55,6 +55,7 @@ public class LocalSong implements Song {
         this.preference = NEUTRAL;
         this.ranking = 0;
 
+        playedBy = "";
         this.url = "www.test.com";
     }
 
