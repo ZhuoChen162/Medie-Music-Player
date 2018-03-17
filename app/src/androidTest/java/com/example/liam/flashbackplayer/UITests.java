@@ -165,8 +165,8 @@ public class UITests {
         TextView time = (TextView) main.findViewById(R.id.currentTime);
         assertEquals(main.masterList.get(0).getName(), song.getText());
         assertEquals("Album: " + main.masterList.get(0).getAlbumName(), album.getText());
-        assertEquals("Location: " + main.flashbackManager.getAddressKey(), loc.getText());
-        assertEquals("PlayTime: " + main.flashbackManager.getCurrTime(), time.getText());
+        assertEquals(main.flashbackManager.getAddressKey(), loc.getText());
+        assertEquals(main.flashbackManager.getCurrTime(), time.getText());
     }
 
     @Test
@@ -241,6 +241,11 @@ public class UITests {
         onView(withId(R.id.enter)).check(matches(isDisplayed()));
         onView(withId(R.id.urlField)).check(matches(isDisplayed()));
         onView(withId(R.id.dlBtn)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void ms2story5Test() {
+        onView(withId(R.id.lastPlayedBy)).check(matches(isDisplayed()));;
     }
 
 }
