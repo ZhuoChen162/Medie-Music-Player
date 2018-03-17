@@ -60,9 +60,11 @@ public class LocalSong implements Song {
 
     public LocalSong(String name, String id, String url) {
         this.name = name;
+        this.albumName = albumName;
         this.id = id;
         this.url = url;
-        this.albumName = null;
+        this.source = null;
+        this.ranking = 0;
     }
 
     /**

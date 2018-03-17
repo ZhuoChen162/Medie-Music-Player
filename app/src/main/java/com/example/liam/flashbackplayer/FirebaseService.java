@@ -22,21 +22,29 @@ public class FirebaseService {
         this.urlList = urlList;
     }
 
-    public void makeCloudChangelist(final Map<String, String> localSongList, final Map<String, String> changeList) {
-        DatabaseReference cloudListRef = database.getReference("songs");
-        cloudListRef.addListenerForSingleValueEvent(new ValueEventListener() {
+    // Get the songs that exist only on the cloud
+    public void makeCloudChangelist(final Map<String, String> localSongList) {
+
+        database.getReference("songs").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Map<String, String> changeList = new HashMap<>();
+
                 for (DataSnapshot song : dataSnapshot.getChildren()) {
                     if (!localSongList.containsKey(song.getKey())) {
                         changeList.put(song.getKey(), song.getValue(String.class));
                     }
                 }
+
+                //Download songs here using changeList
+                for (Map.Entry<String, String> pair : changeList.entrySet()) {
+                    Log.i("cloudChange", pair.toString());
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.w("Failed to read value.", databaseError.toException());
+                Log.w("Failed to read songs.", databaseError.toException());
             }
         });
     }
@@ -113,9 +121,4 @@ public class FirebaseService {
         newHist.child("day").setValue(yearAndDay);
         newHist.child("user").setValue(userId);
     }
-
-    public void uploadSongs() {
-        updateCloudSongList(urlList.getLocalChange());
-    }
-
 }

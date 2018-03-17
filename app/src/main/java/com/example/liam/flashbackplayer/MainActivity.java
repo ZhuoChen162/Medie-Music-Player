@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -106,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-        urlList = new UrlList();
-        fbs = new FirebaseService(urlList);
 
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -157,8 +156,8 @@ public class MainActivity extends AppCompatActivity {
                     PriorityQueue<Song> pq = flashbackManager.getRankList();
 
                     //add songs in pq into the flashbackList
-                    while(!pq.isEmpty()) {
-                        if(!flashbackList.contains(pq.peek())) {
+                    while (!pq.isEmpty()) {
+                        if (!flashbackList.contains(pq.peek())) {
                             flashbackList.add(pq.poll());
                             break;
                         }
@@ -194,10 +193,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onEnterVibeMode() {
-        fbs.makeCloudChangelist(urlList.getUrlMap(), urlList.getCloudChange());
-        urlList.makeLocalChangelist(masterList);
+        fbs.makeCloudChangelist(urlList.getUrlMap());
 
-        fbs.updateCloudSongList(urlList.getLocalChange());
+        fbs.updateCloudSongList(urlList.getUrlMap());
     }
 
     /**
@@ -213,13 +211,10 @@ public class MainActivity extends AppCompatActivity {
             if (history != null) {
                 prefs.saveObjectWithSongs(history, "history");
             }
-            if (urlList != null) {
-                prefs.saveObject(urlList.getUrlMap(), "urlList");
-            }
             prefs.saveInt(displayMode, "mode");
             prefs.saveInt(masterList.size(), "totalSize");
         }
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(false);
         }
     }
@@ -230,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(true);
         }
     }
@@ -243,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         appMediator.release();
         unregisterReceiver(onComplete);
-
     }
 
     /**
@@ -311,19 +305,16 @@ public class MainActivity extends AppCompatActivity {
 
         musicController = new MusicController(mediaPlayer, this);
         uiManager = new UIManager(this);
+
+        urlList = new UrlList(masterList);
+        fbs = new FirebaseService(urlList);
+
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
         history = prefs.getHistory("history");
         if (history == null) {
             history = new ArrayList<History>();
         }
-
-        Map<String, String> storedUrlList = prefs.getUrlList("urlList");
-        if (storedUrlList != null) {
-            urlList.addToUrlMap(storedUrlList);
-        }
-
-        onEnterVibeMode();
 
         Button playerMode = (Button) findViewById(R.id.btnPlayer);
         Button flashbackMode = (Button) findViewById(R.id.btnFlashback);
@@ -342,6 +333,8 @@ public class MainActivity extends AppCompatActivity {
             playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         }
         uiManager.populateUI(displayMode);
+
+        onEnterVibeMode();
     }
 
     private void viewHistory() {
@@ -351,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-                if(history.get(position).getSong() != null) {
+                if (history.get(position).getSong() != null) {
                     text1.setText(history.get(position).getSong().getName());
                 }
                 text2.setText(history.get(position).getTime());
@@ -442,30 +435,32 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == GOOGLE_SIGN_IN) {
-            if (resultCode == RESULT_OK && data != null) {
-                myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
-                appMediator.setUserId(myEmail);
-                emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
+        switch (requestCode) {
+            case GOOGLE_SIGN_IN:
+                if (resultCode == RESULT_OK && data != null) {
+                    myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
+                    appMediator.setUserId(myEmail);
+                    emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
 
-                fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
-            }
-        }
+                    fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
+                }
+                break;
 
-        if(requestCode == MOCK_TIME) {
-            if (resultCode == RESULT_OK && data != null) {
-                boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
-                long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
-                flashbackManager.setShouldUpdate(shouldUpdate);
-                flashbackManager.setMockMillis(millis);
-            }
-        }
+            case MOCK_TIME:
+                if (resultCode == RESULT_OK && data != null) {
+                    boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
+                    long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
+                    flashbackManager.setShouldUpdate(shouldUpdate);
+                    flashbackManager.setMockMillis(millis);
+                }
+                break;
 
-        if(requestCode == DOWNLOAD_MUSIC) {
-            if (resultCode == RESULT_OK && data != null) {
-                String url = data.getStringExtra(DownloadActivity.EXTRA_URL);
-                loader.downloadFromUrl(Uri.parse(url));
-            }
+            case DOWNLOAD_MUSIC:
+                if (resultCode == RESULT_OK && data != null) {
+                    String url = data.getStringExtra(DownloadActivity.EXTRA_URL);
+                    loader.downloadFromUrl(Uri.parse(url));
+                }
+                break;
         }
     }
 

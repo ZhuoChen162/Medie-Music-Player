@@ -68,15 +68,6 @@ public class SharedPreferenceDriver {
         return gson.fromJson(json, alistType);
     }
 
-    public HashMap<String, String> getUrlList(String id) {
-        Gson gson = new Gson();
-        String storedUrlList = prefs.getString(id, "");
-        if (storedUrlList.isEmpty()) return null;
-        java.lang.reflect.Type type = new TypeToken<HashMap<String, String>>() {
-        }.getType();
-        return gson.fromJson(storedUrlList, type);
-    }
-
     public ArrayList<History> getHistory(String id) {
         Gson gson = new GsonBuilder().registerTypeAdapter(Song.class, new InterfaceAdapter<Song>())
                 .create();
