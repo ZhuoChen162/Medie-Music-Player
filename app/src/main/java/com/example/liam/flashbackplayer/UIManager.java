@@ -314,17 +314,24 @@ public class UIManager {
      * @param loc      when play it
      * @param currTime time when play the song
      */
-    public void displayInfo(String name, String album, String loc, String currTime) {
+    public void displayInfo(final String name, final String album, final String loc, final String currTime) {
 
-        TextView songName = (TextView) activity.findViewById(R.id.SongName);
-        TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
-        TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
-        TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
+        final TextView songName = (TextView) activity.findViewById(R.id.SongName);
+        final TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
+        final TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
+        final TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
 
-        songName.setText(name);
-        AlbumName.setText("Album: " + album);
-        currentTime.setText("PlayTime: " + currTime);
-        currentLocation.setText("Location: " + loc);
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                songName.setText(name);
+                AlbumName.setText("Album: " + album);
+                currentTime.setText("PlayTime: " + currTime);
+                currentLocation.setText("Location: " + loc);
+
+            }
+
+        });
+
     }
 
     /**

@@ -136,10 +136,13 @@ public class UITests {
     @Test
     public void ms1story3Test() {
         MainActivity main = mActivityTestRule.getActivity();
-        //check to make sure all fields exist when a song is playing
-        DataInteraction twoLineListItem2 = onData(anything()).inAdapterView(withId(R.id.songDisplay)).atPosition(0);
-        twoLineListItem2.perform(click());
+        //Mock Location and Time to make testing deterministic
+        //April 7 1997 03:10 AM, New York, NY
+        MockLocation mockLoc = new MockLocation(40.7732951, -73.9819386);
+        MockCalendar mockCal = new MockCalendar(860407800000L);
+        main.appMediator.startPlay(main.masterList.get(0), mockLoc, mockCal);
 
+        //check to make sure all fields exist when a song is playing
         ViewInteraction songName = onView(withId(R.id.SongName));
         songName.check(matches(isDisplayed()));
 
@@ -152,11 +155,6 @@ public class UITests {
         ViewInteraction currLoc = onView(withId(R.id.currentLocation));
         currLoc.check(matches(isDisplayed()));
 
-        //Mock Location and Time to make testing deterministic
-        //April 7 1997 03:10 AM, New York, NY
-        MockLocation mockLoc = new MockLocation(40.7732951, -73.9819386);
-        MockCalendar mockCal = new MockCalendar(860407800000L);
-        main.appMediator.startPlay(main.masterList.get(0), mockLoc, mockCal);
         assertEquals("New York136", main.flashbackManager.getAddressKey());
         assertEquals("1997/04/07 03:10", main.flashbackManager.getCurrTime());
 
@@ -232,6 +230,17 @@ public class UITests {
         onView(withText("Albums")).check(matches(isDisplayed()));
         onView(withText("Artist")).check(matches(isDisplayed()));
         onView(withText("Fav")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void ms2story4Test() {
+        ViewInteraction download = onView(withId(R.id.btnDownload));
+        download.check(matches(isDisplayed()));
+        download.perform(click());
+
+        onView(withId(R.id.enter)).check(matches(isDisplayed()));
+        onView(withId(R.id.urlField)).check(matches(isDisplayed()));
+        onView(withId(R.id.dlBtn)).check(matches(isDisplayed()));
     }
 
 }

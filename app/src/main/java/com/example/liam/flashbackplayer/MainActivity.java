@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
         albumMap = loader.getAlbumMap();
         masterList = loader.getmList();
 
-        MusicController musicController = new MusicController(mediaPlayer, this);
+        musicController = new MusicController(mediaPlayer, this);
         uiManager = new UIManager(this);
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
