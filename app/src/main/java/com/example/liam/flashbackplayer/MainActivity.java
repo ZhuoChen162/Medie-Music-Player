@@ -143,33 +143,33 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 onEnterVibeMode();
 
-                playerMode.getBackground().clearColorFilter();
-                flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-                prevMode = displayMode;
-                if (appMediator.getPlayMode() != MODE_VIBE) {
-                    flashbackList.clear();
-                    GPSTracker gps = new GPSTracker(v.getContext());
-
-                    //update curr loc and time to implement the ranking algorihtm
-                    flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
-                    flashbackManager.rankSongs(masterList);
-                    PriorityQueue<Song> pq = flashbackManager.getRankList();
-
-                    //add songs in pq into the flashbackList
-                    while (!pq.isEmpty()) {
-                        if (!flashbackList.contains(pq.peek())) {
-                            flashbackList.add(pq.poll());
-                            break;
-                        }
-                    }
-
-                    //update UI
-                    displayMode = MODE_VIBE;
-                    uiManager.populateUI(displayMode);
-                } else {
-                    displayMode = MODE_VIBE;
-                    uiManager.populateUI(displayMode);
-                }
+//                playerMode.getBackground().clearColorFilter();
+//                flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+//                prevMode = displayMode;
+//                if (appMediator.getPlayMode() != MODE_VIBE) {
+//                    flashbackList.clear();
+//                    GPSTracker gps = new GPSTracker(v.getContext());
+//
+//                    //update curr loc and time to implement the ranking algorihtm
+//                    flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
+//                    flashbackManager.rankSongs(masterList);
+//                    PriorityQueue<Song> pq = flashbackManager.getRankList();
+//
+//                    //add songs in pq into the flashbackList
+//                    while (!pq.isEmpty()) {
+//                        if (!flashbackList.contains(pq.peek())) {
+//                            flashbackList.add(pq.poll());
+//                            break;
+//                        }
+//                    }
+//
+//                    //update UI
+//                    displayMode = MODE_VIBE;
+//                    uiManager.populateUI(displayMode);
+//                } else {
+//                    displayMode = MODE_VIBE;
+//                    uiManager.populateUI(displayMode);
+//                }
             }
         });
 

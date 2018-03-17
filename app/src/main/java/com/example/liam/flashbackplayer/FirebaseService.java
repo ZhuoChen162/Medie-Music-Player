@@ -14,6 +14,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +52,7 @@ public class FirebaseService {
 
                 for (Map.Entry<String, String> pair : changeList.entrySet()) {
                     String songId = pair.getKey();
-                    String[] parts = songId.split(":");
+                    String[] parts = songId.split("=");
                     Song downloading = new LocalSong(parts[0], parts[1], songId, pair.getValue());
                     MainActivity.masterList.add(downloading);
                     loader.addSongToAlbum(downloading);
@@ -135,25 +141,99 @@ public class FirebaseService {
         newHist.child("user").setValue(userId);
     }
 
-    class DownloadSongAsync extends AsyncTask<Song, Void, Song> {
+    class DownloadSongAsync extends AsyncTask<Song, Void, String> {
 
         @Override
-        protected Song doInBackground(Song... songs) {
+        protected String doInBackground(Song... songs) {
             Song downloading = songs[0];
-            Uri uri = Uri.parse(downloading.getUrl());
-            File musicFile = loader.downloadFromUri(uri);
+            String fileUrl = downloading.getUrl();
+            Log.i("DownloadStarted", downloading.getName());
 
-            FileInputStream fis = new FileInputStream(musicFile);
-            FileDescriptor fd = fis.getFD();
-            mmr.setDataSource(fd);
-            String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            InputStream input = null;
+            FileOutputStream output = null;
+            HttpURLConnection urlConnection = null;
+            File dest = loader.getDefaultMusicDirectory();
+            try {
+                URL url = new URL(fileUrl);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.connect();
 
-            downloading.setArtist(artist == null ? "Unknown Artist" : artist);
-            downloading.setLength(length == null ? 0 : Integer.parseInt(length));
+                // expect HTTP 200 OK, so we don't mistakenly save error report instead of the file
+                if (urlConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + urlConnection.getResponseCode()
+                            + " " + urlConnection.getResponseMessage();
+                }
 
+                String fileName = "";
+                String disposition = urlConnection.getHeaderField("Content-Disposition");
+                String contentType = urlConnection.getContentType();
+                int contentLength = urlConnection.getContentLength();
 
-            fis.close();
+                if (disposition != null) {
+                    // extracts file name from header field
+                    int index = disposition.indexOf("filename=");
+                    if (index > 0) {
+                        fileName = disposition.substring(index + 10, disposition.length() - 1);
+                        if (fileName.contains("\"")) {
+                            fileName = fileName.split("\"")[0];
+                        }
+                    }
+                } else {
+                    // extracts file name from URL
+                    fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1, fileUrl.length());
+                }
+                System.out.println("Content-Type = " + contentType);
+                System.out.println("Content-Disposition = " + disposition);
+                System.out.println("Content-Length = " + contentLength);
+                System.out.println("fileName = " + fileName);
+
+                String path = dest.toString() + File.separator + fileName;
+
+                // download the file
+                input = urlConnection.getInputStream();
+
+                // opens an output stream to save into file
+                output = new FileOutputStream(path);
+
+                byte data[] = new byte[4096];
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling with back button
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    output.write(data, 0, count);
+                }
+
+                Log.i("DownloadFinished", downloading.getName());
+                Log.i("DownloadFinishedPath", path);
+
+                FileDescriptor fd = output.getFD();
+                mmr.setDataSource(fd);
+                String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+                String length = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                Log.i("DownloadFinishedArtist", artist);
+
+                downloading.setArtist(artist == null ? "Unknown Artist" : artist);
+                downloading.setLength(length == null ? 0 : Integer.parseInt(length));
+                downloading.setSource(path);
+
+            } catch (Exception e) {
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (urlConnection != null)
+                    urlConnection.disconnect();
+            }
+
             return null;
         }
     }

@@ -56,7 +56,7 @@ public class MusicLoader {
      *
      * @return null
      */
-    private File getDefaultMusicDirectory() {
+    protected File getDefaultMusicDirectory() {
         //check if storage is mounted (aka read- and write- capable) or at least read-only mounted
         String state = Environment.getExternalStorageState();
         if (!(Environment.MEDIA_MOUNTED.equals(state) ||

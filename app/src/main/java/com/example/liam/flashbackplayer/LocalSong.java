@@ -54,8 +54,6 @@ public class LocalSong implements Song {
         this.locations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
         this.ranking = 0;
-
-        this.url = "www.test.com";
     }
 
     public LocalSong(String name, String albumName, String id, String url) {
@@ -281,6 +279,10 @@ public class LocalSong implements Song {
 
     public void setLength(int length) {
         this.length = length;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
 
