@@ -13,7 +13,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
 
-
+/**
+ * This is a FlashbackManager class that will manage teh flashback mode algorithm
+    so that songns will be played in order in flashback mode 
+ */
 public class FlashbackManager {
     private double longitude, latitude;
     private int date;
