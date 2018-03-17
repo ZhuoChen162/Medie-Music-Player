@@ -2,8 +2,7 @@ package com.example.liam.flashbackplayer;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +14,8 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class UIManager {
     private Activity activity;
@@ -223,7 +219,7 @@ public class UIManager {
                 break;
 
 
-            case (MainActivity.MODE_FLASHBACK):
+            case (MainActivity.MODE_VIBE):
                 ArrayAdapter<Song> adapter4 = new ArrayAdapter<Song>(activity, R.layout.song_list, android.R.id.text1, MainActivity.flashbackList) {
                     @Override
                     public View getView(int position, View convertView, ViewGroup parent) {
@@ -319,17 +315,31 @@ public class UIManager {
      * @param loc      when play it
      * @param currTime time when play the song
      */
-    public void displayInfo(String name, String album, String loc, String currTime) {
+    public void displayInfo(final String name, final String album, final String loc, final String currTime, final String playByName) {
 
-        TextView songName = (TextView) activity.findViewById(R.id.SongName);
-        TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
-        TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
-        TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
+        final TextView songName = (TextView) activity.findViewById(R.id.SongName);
+        final TextView AlbumName = (TextView) activity.findViewById(R.id.AlbumName);
+        final TextView currentTime = (TextView) activity.findViewById(R.id.currentTime);
+        final TextView currentLocation = (TextView) activity.findViewById(R.id.currentLocation);
+        final TextView lastPlayedBy = (TextView) activity.findViewById(R.id.lastPlayedBy);
 
-        songName.setText(name);
-        AlbumName.setText("Album: " + album);
-        currentTime.setText("PlayTime: " + currTime);
-        currentLocation.setText("Location: " + loc);
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                songName.setText(name);
+                AlbumName.setText("Album: " + album);
+                currentTime.setText(currTime);
+                currentLocation.setText(loc);
+                lastPlayedBy.setText(playByName);
+
+                if(playByName.equals("You")) {
+                    lastPlayedBy.setTypeface(null, Typeface.ITALIC);
+                } else {
+                    lastPlayedBy.setTypeface(null, Typeface.NORMAL);
+                }
+            }
+
+        });
+
     }
 
     /**

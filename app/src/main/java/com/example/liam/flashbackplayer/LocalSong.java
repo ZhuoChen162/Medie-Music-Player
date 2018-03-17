@@ -54,14 +54,18 @@ public class LocalSong implements Song {
         this.locations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
         this.ranking = 0;
-
-        this.url = "www.test.com";
+        this.playedBy = "";
     }
 
-    public LocalSong(String name, String id, String url) {
+    public LocalSong(String name, String albumName, String id, String url) {
         this.name = name;
+        this.albumName = albumName;
         this.id = id;
         this.url = url;
+        this.source = null;
+        this.ranking = 0;
+        this.playedBy = "";
+        this.preference = NEUTRAL;
     }
 
     /**
@@ -270,6 +274,18 @@ public class LocalSong implements Song {
 
     public void setPlayedBy(String playedBy) {
         this.playedBy = playedBy;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
 

@@ -16,6 +16,7 @@ public class AppMediator {
     private UIManager uiManager;
     private FirebaseService fbs;
     private Activity activity;
+    private AnonymousName anonymousName;
 
     private String userId;
 
@@ -25,6 +26,7 @@ public class AppMediator {
         this.uiManager = uim;
         this.fbs = fbs;
         this.activity = act;
+        this.anonymousName = new AnonymousName();
         this.flashbackManager.setAppMediator(this);
         this.musicController.setAppMediator(this);
         this.uiManager.setAppMediator(this);
@@ -61,7 +63,7 @@ public class AppMediator {
                     && musicController.getCurrSong() < MainActivity.perAlbumList.size()
                     && musicController.getPlayMode() == displayMode
                     && MainActivity.perAlbumList.get(musicController.getCurrSong()).getAlbumName().equals(name));
-        } else if (displayMode == MainActivity.MODE_FLASHBACK) {
+        } else if (displayMode == MainActivity.MODE_VIBE) {
             return (musicController.getPlayMode() != displayMode);
         }
         return false;
@@ -76,7 +78,7 @@ public class AppMediator {
             } else {
                 musicController.playSong(MainActivity.perAlbumList.get(musicController.getCurrSong()));
             }
-        } else if (displayMode == MainActivity.MODE_FLASHBACK) {
+        } else if (displayMode == MainActivity.MODE_VIBE) {
             musicController.setCurrSong(0);
             if (MainActivity.flashbackList.size() != 0) {
                 musicController.playSong(MainActivity.flashbackList.get(musicController.getCurrSong()));
@@ -99,7 +101,7 @@ public class AppMediator {
             Log.i("SONG DONE", MainActivity.perAlbumList.get(musicController.getCurrSong()).getName());
             musicController.skipSong(1);
         }
-        if (playMode == MainActivity.MODE_FLASHBACK) {
+        if (playMode == MainActivity.MODE_VIBE) {
             Log.i("SONG DONE", MainActivity.flashbackList.get(musicController.getCurrSong()).getName());
 
             //update curr loc and time to implement the ranking algorihtm
@@ -122,10 +124,28 @@ public class AppMediator {
     public void startPlay(Song playing, GPSTracker gps, Calendar cal) {
         //update curr loc and time, for display and storage
         flashbackManager.updateLocAndTime(gps, cal);
-        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime());
-        Drawable pauseImg = activity.getResources().getDrawable(R.drawable.ic_pause);
-        Button playPause = (Button) activity.findViewById(R.id.buttonPlay);
-        playPause.setBackground(pauseImg);
+        //Get last-played-by info
+        String playByName = "You";
+        String playedBy = playing.getPlayedBy();
+        if (playedBy.equals("")) {
+            playByName = "NoOne";
+        } else if (MainActivity.myEmail.equals(playedBy)) {
+            playByName = "You";
+        } else if (MainActivity.emailAndName.containsKey(playedBy)) {
+            playByName = MainActivity.emailAndName.get(playedBy);
+        } else {
+            playByName = anonymousName.getAnonmyousName(playedBy);
+        }
+
+        uiManager.displayInfo(playing.getName(), playing.getAlbumName(), flashbackManager.getAddressKey(), flashbackManager.getCurrTime(), playByName);
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                Drawable pauseImg = activity.getResources().getDrawable(R.drawable.ic_pause);
+                Button playPause = (Button) activity.findViewById(R.id.buttonPlay);
+                playPause.setBackground(pauseImg);
+            }
+
+        });
         MainActivity.addToHistory(playing, Calendar.getInstance());
     }
 

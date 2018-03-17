@@ -35,6 +35,11 @@ public class Album implements Comparable{
         this.cacheCheck.add(song.getName());
     }
 
+    public void removeSong(Song song) {
+        this.songList.remove(song);
+        this.cacheCheck.remove(song.getName());
+    }
+
     /**
      * This method will simply return the album name
      *
@@ -62,7 +67,6 @@ public class Album implements Comparable{
         if(this.cacheCheck.contains(songName)) {
             return true;
         } else {
-//            this.cacheCheck.add(songName);
             return false;
         }
     }

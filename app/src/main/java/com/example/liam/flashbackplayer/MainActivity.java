@@ -2,7 +2,10 @@ package com.example.liam.flashbackplayer;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -10,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,7 +34,6 @@ import java.util.Calendar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 
 /**
@@ -42,13 +43,15 @@ import java.util.PriorityQueue;
 public class MainActivity extends AppCompatActivity {
     public static final int MODE_SONG = 0;
     public static final int MODE_ALBUM = 1;
-    public static final int MODE_FLASHBACK = 2;
-    private static final int GOOGLE_SIGN_IN = 9002;
-    private static final int MOCK_TIME = 9003;
-
+    public static final int MODE_VIBE = 2;
     //added modes for display by artist and display by Favorites
     public static final int MODE_ARTIST = 4;
     public static final int MODE_FAVORITE = 5;
+
+    //activity request codes
+    private static final int GOOGLE_SIGN_IN = 9002;
+    private static final int MOCK_TIME = 9003;
+    private static final int DOWNLOAD_MUSIC = 9004;
 
     public static final int[] FAVE_ICONS = {R.drawable.ic_delete, R.drawable.ic_add, R.drawable.ic_checkmark_sq};
 
@@ -60,13 +63,13 @@ public class MainActivity extends AppCompatActivity {
 
     protected static HashMap<String, String> emailAndName;
     protected static String myEmail;
+    private BroadcastReceiver onComplete;
 
     protected MediaPlayer mediaPlayer;
     protected SharedPreferenceDriver prefs;
     protected boolean isAlbumExpanded;
 
     protected int currSong;
-    protected int playMode;
     protected int prevMode;
     protected int displayMode;
 
@@ -75,10 +78,10 @@ public class MainActivity extends AppCompatActivity {
     protected UIManager uiManager;
     protected MusicController musicController;
     protected AppMediator appMediator;
+    protected MusicLoader loader;
 
     private UrlList urlList;
     private FirebaseService fbs;
-    private Button signInBtn;
 
     /**
      * Override the oncreate method to handle the basic button function such as
@@ -90,9 +93,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        urlList = new UrlList();
-        fbs = new FirebaseService(urlList);
+        onComplete = new BroadcastReceiver() {
+            public void onReceive(Context ctxt, Intent intent) {
+                File downloadedFile = loader.getLastDownloadedFile();
+                loader.populateAlbumWithSong(downloadedFile);
+                loader.generateMList();
+                albumMap = loader.getAlbumMap();
+                masterList = loader.getmList();
+                uiManager.populateUI(displayMode);
+                //do something with the last downloaded file here...
+            }
+        };
+        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         getPermsExplicit();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -129,37 +141,28 @@ public class MainActivity extends AppCompatActivity {
         flashbackMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                onEnterVibeMode();
+
                 playerMode.getBackground().clearColorFilter();
                 flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
                 prevMode = displayMode;
-                if (appMediator.getPlayMode() != MODE_FLASHBACK) {
+                if (appMediator.getPlayMode() != MODE_VIBE) {
                     flashbackList.clear();
                     GPSTracker gps = new GPSTracker(v.getContext());
 
                     //update curr loc and time to implement the ranking algorihtm
                     flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
-                    flashbackManager.rankSongs(masterList);
-                    PriorityQueue<Song> pq = flashbackManager.getRankList();
+                    flashbackManager.makeVibeList(uiManager, fbs);
 
-                    //add songs in pq into the flashbackList
-                    while(!pq.isEmpty()) {
-                        if(!flashbackList.contains(pq.peek())) {
-                            flashbackList.add(pq.poll());
-                            break;
-                        }
-                    }
-
-                    //update UI
-                    displayMode = MODE_FLASHBACK;
-                    uiManager.populateUI(displayMode);
+                    displayMode = MODE_VIBE;
                 } else {
-                    displayMode = MODE_FLASHBACK;
+                    displayMode = MODE_VIBE;
                     uiManager.populateUI(displayMode);
                 }
             }
         });
 
-        Button signInBtn = findViewById(R.id.btnSignIn);
+        Button signInBtn = (Button) findViewById(R.id.btnSignIn);
         signInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -168,29 +171,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button mockTimeBtn = findViewById(R.id.btnMock);
-        mockTimeBtn.setOnClickListener(new View.OnClickListener() {
+        Button downloadBtn = (Button) findViewById(R.id.btnDownload);
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, MockTimeActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putBoolean(MockTimeActivity.EXTRA_UPDATE, flashbackManager.shouldUpdate());
-                bundle.putLong(MockTimeActivity.EXTRA_MILLIS, flashbackManager.getMockMillis());
-                intent.putExtras(bundle);
-                startActivityForResult(intent, MOCK_TIME);
+                Intent intent = new Intent(MainActivity.this, DownloadActivity.class);
+                startActivityForResult(intent, DOWNLOAD_MUSIC);
             }
         });
-
-        // The player starts at player mode, so set the button color to gray
-        //playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-
     }
 
     protected void onEnterVibeMode() {
-        fbs.makeCloudChangelist(urlList.getUrlMap(), urlList.getCloudChange());
-        urlList.makeLocalChangelist(masterList);
+        fbs.makeCloudChangelist(urlList.getUrlMap());
 
-        fbs.updateCloudSongList(urlList.getLocalChange());
+        fbs.updateCloudSongList(urlList.getUrlMap());
     }
 
     /**
@@ -206,12 +200,10 @@ public class MainActivity extends AppCompatActivity {
             if (history != null) {
                 prefs.saveObjectWithSongs(history, "history");
             }
-            if (urlList != null) {
-                prefs.saveObject(urlList.getUrlMap(), "urlList");
-            }
             prefs.saveInt(displayMode, "mode");
+            prefs.saveInt(masterList.size(), "totalSize");
         }
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(false);
         }
     }
@@ -222,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(uiManager != null) {
+        if (uiManager != null) {
             uiManager.setIsActive(true);
         }
     }
@@ -234,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         appMediator.release();
+        unregisterReceiver(onComplete);
     }
 
     /**
@@ -292,15 +285,19 @@ public class MainActivity extends AppCompatActivity {
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
-        MusicLoader loader = new MusicLoader(new MediaMetadataRetriever(), prefs);
+        //get Song objects from local music files
+        loader = new MusicLoader(new MediaMetadataRetriever(), prefs, this);
         loader.init();
+        loader.generateMList();
         albumMap = loader.getAlbumMap();
-        masterList = new ArrayList<Song>();
-        for (Album toAdd : albumMap.values()) {
-            masterList.addAll(toAdd.getSongList());
-        }
-        MusicController musicController = new MusicController(mediaPlayer, this);
+        masterList = loader.getmList();
+
+        musicController = new MusicController(mediaPlayer, this);
         uiManager = new UIManager(this);
+
+        urlList = new UrlList(masterList);
+        fbs = new FirebaseService(urlList, loader, flashbackManager);
+
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
         history = prefs.getHistory("history");
@@ -308,14 +305,11 @@ public class MainActivity extends AppCompatActivity {
             history = new ArrayList<History>();
         }
 
-        Map<String, String> storedUrlList = prefs.getUrlList("urlList");
-        if (storedUrlList != null) {
-            urlList.addToUrlMap(storedUrlList);
-        }
-
-        onEnterVibeMode();
-
-        if (displayMode == MODE_FLASHBACK) {
+        Button playerMode = (Button) findViewById(R.id.btnPlayer);
+        Button flashbackMode = (Button) findViewById(R.id.btnFlashback);
+        if (displayMode == MODE_VIBE) {
+            playerMode.getBackground().clearColorFilter();
+            flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
             GPSTracker gps = new GPSTracker(this);
             flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
             flashbackManager.rankSongs(masterList);
@@ -323,6 +317,9 @@ public class MainActivity extends AppCompatActivity {
             if (!pq.isEmpty()) {
                 flashbackList.add(pq.poll());
             }
+        } else {
+            flashbackMode.getBackground().clearColorFilter();
+            playerMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         }
         uiManager.populateUI(displayMode);
     }
@@ -334,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-                if(history.get(position).getSong() != null) {
+                if (history.get(position).getSong() != null) {
                     text1.setText(history.get(position).getSong().getName());
                 }
                 text2.setText(history.get(position).getTime());
@@ -374,6 +371,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle item selection
         switch (itemId) {
+            case R.id.btn_settings:
+                Intent intent = new Intent(MainActivity.this, MockTimeActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(MockTimeActivity.EXTRA_UPDATE, flashbackManager.shouldUpdate());
+                bundle.putLong(MockTimeActivity.EXTRA_MILLIS, flashbackManager.getMockMillis());
+                intent.putExtras(bundle);
+                startActivityForResult(intent, MOCK_TIME);
+                return true;
+
             case R.id.btn_history:
                 prevMode = displayMode;
                 viewHistory();
@@ -416,73 +422,31 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == GOOGLE_SIGN_IN) {
-            if (resultCode == RESULT_OK && data != null) {
-                myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
-                appMediator.setUserId(myEmail);
-                emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
+        switch (requestCode) {
+            case GOOGLE_SIGN_IN:
+                if (resultCode == RESULT_OK && data != null) {
+                    myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
+                    appMediator.setUserId(myEmail);
+                    emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
+                }
+                break;
 
-                fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
-            }
-        }
+            case MOCK_TIME:
+                if (resultCode == RESULT_OK && data != null) {
+                    boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
+                    long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
+                    flashbackManager.setShouldUpdate(shouldUpdate);
+                    flashbackManager.setMockMillis(millis);
+                }
+                break;
 
-        if(requestCode == MOCK_TIME) {
-            if (resultCode == RESULT_OK && data != null) {
-                boolean shouldUpdate = data.getBooleanExtra(MockTimeActivity.EXTRA_UPDATE, true);
-                long millis = data.getLongExtra(MockTimeActivity.EXTRA_MILLIS, 0);
-                Log.w("GOT HERE", "got data back. Millis: " + millis + ", shouldUpdate: " + shouldUpdate);
-                flashbackManager.setShouldUpdate(shouldUpdate);
-                flashbackManager.setMockMillis(millis);
-            }
+            case DOWNLOAD_MUSIC:
+                if (resultCode == RESULT_OK && data != null) {
+                    String url = data.getStringExtra(DownloadActivity.EXTRA_URL);
+                    loader.downloadFromUri(Uri.parse(url));
+                }
+                break;
         }
     }
 
-    /**
-     * This is the method that used to download the songs by its URL
-     * To use this method, first parse the URL to URI and then pass to it
-     * and then it will download the song for you
-     * @param uri song's uri
-     * @param songName name that you want to store
-     * @return id reference of the songs
-     */
-
-    private long DownloadSongs (Uri uri, String songName) {
-
-        long downloadReference;
-
-        // Create request for android download manager
-        DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-
-        //Setting title of request
-        request.setTitle("Data Download");
-
-        //Setting description of request
-        request.setDescription("Android Data download using DownloadManager.");
-
-        //Set the local destination for the downloaded file to a path
-        File destinationFile = new File("/storage/emulated/0/Music", songName);
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.e("Permission error", "You have permission");
-                //set the download song's path and name of the song
-
-            }else {
-
-                Log.e("Permission error","You have asked for permission");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-
-            }
-        }
-        else { //you dont need to worry about these stuff below api level 23
-            Log.e("Permission error","You already have the permission");
-            request.setDestinationUri(Uri.fromFile(destinationFile));
-        }
-        request.setDestinationUri(Uri.fromFile(destinationFile));
-        //Enqueue download and save into referenceId
-        downloadReference = downloadManager.enqueue(request);
-
-        return downloadReference;
-    }
 }

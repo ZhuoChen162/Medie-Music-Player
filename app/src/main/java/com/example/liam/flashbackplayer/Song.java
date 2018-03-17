@@ -55,7 +55,13 @@ public interface Song extends Comparable {
 
     String getPlayedBy();
 
+    void setArtist(String artist);
+
+    void setLength(int length);
+
     void setPlayedBy(String playedBy);
+
+    void setSource(String source);
 
     @Override
     int compareTo(@NonNull Object o);

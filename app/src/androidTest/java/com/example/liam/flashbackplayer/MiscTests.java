@@ -6,6 +6,9 @@ import android.support.test.espresso.DataInteraction;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiSelector;
 import android.util.Log;
 import android.widget.Adapter;
 import android.widget.ListView;
@@ -37,7 +40,17 @@ public class MiscTests {
     public GrantPermissionRule permissionRule3 = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     @Before
-    public void ensureSongMode() {
+    public void loginAndEnsureSongMode() {
+        try {
+            onView(withId(R.id.btnSignIn)).perform(click());
+            onView(withId(R.id.sign_in_button)).perform(click());
+            UiDevice mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            UiObject account = mUiDevice.findObject(new UiSelector().index(0));
+            account.click();
+        } catch(Exception e) {
+            Log.e("TEST SIGN IN", e.getMessage());
+        }
+
         ViewInteraction sortBtn = onView(withId(R.id.btn_sortby));
         sortBtn.perform(click());
         onView(withText("Names")).perform(click());
