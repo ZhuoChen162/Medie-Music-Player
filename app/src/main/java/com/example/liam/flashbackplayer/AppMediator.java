@@ -127,9 +127,11 @@ public class AppMediator {
         //Get last-played-by info
         String playByName = "You";
         String playedBy = playing.getPlayedBy();
-        if(MainActivity.myEmail.equals(playedBy) || playedBy.equals("")) {
+        if (playedBy.equals("")) {
+            playByName = "NoOne";
+        } else if (MainActivity.myEmail.equals(playedBy)) {
             playByName = "You";
-        } else if(MainActivity.emailAndName.containsKey(playedBy)) {
+        } else if (MainActivity.emailAndName.containsKey(playedBy)) {
             playByName = MainActivity.emailAndName.get(playedBy);
         } else {
             playByName = anonymousName.getAnonmyousName(playedBy);

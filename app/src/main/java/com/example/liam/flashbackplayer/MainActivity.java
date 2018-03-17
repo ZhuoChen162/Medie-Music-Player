@@ -143,33 +143,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 onEnterVibeMode();
 
-//                playerMode.getBackground().clearColorFilter();
-//                flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
-//                prevMode = displayMode;
-//                if (appMediator.getPlayMode() != MODE_VIBE) {
-//                    flashbackList.clear();
-//                    GPSTracker gps = new GPSTracker(v.getContext());
-//
-//                    //update curr loc and time to implement the ranking algorihtm
-//                    flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
-//                    flashbackManager.rankSongs(masterList);
-//                    PriorityQueue<Song> pq = flashbackManager.getRankList();
-//
-//                    //add songs in pq into the flashbackList
-//                    while (!pq.isEmpty()) {
-//                        if (!flashbackList.contains(pq.peek())) {
-//                            flashbackList.add(pq.poll());
-//                            break;
-//                        }
-//                    }
-//
-//                    //update UI
-//                    displayMode = MODE_VIBE;
-//                    uiManager.populateUI(displayMode);
-//                } else {
-//                    displayMode = MODE_VIBE;
-//                    uiManager.populateUI(displayMode);
-//                }
+                playerMode.getBackground().clearColorFilter();
+                flashbackMode.getBackground().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+                prevMode = displayMode;
+                if (appMediator.getPlayMode() != MODE_VIBE) {
+                    flashbackList.clear();
+                    GPSTracker gps = new GPSTracker(v.getContext());
+
+                    //update curr loc and time to implement the ranking algorihtm
+                    flashbackManager.updateLocAndTime(gps, Calendar.getInstance());
+                    flashbackManager.makeVibeList(uiManager, fbs);
+
+                    displayMode = MODE_VIBE;
+                } else {
+                    displayMode = MODE_VIBE;
+                    uiManager.populateUI(displayMode);
+                }
             }
         });
 
@@ -307,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         uiManager = new UIManager(this);
 
         urlList = new UrlList(masterList);
-        fbs = new FirebaseService(urlList, loader);
+        fbs = new FirebaseService(urlList, loader, flashbackManager);
 
         appMediator = new AppMediator(flashbackManager, musicController, uiManager, fbs, this);
 
@@ -439,8 +428,6 @@ public class MainActivity extends AppCompatActivity {
                     myEmail = data.getStringExtra(GoogleLoginActivity.EXTRA_MYEMAIL);
                     appMediator.setUserId(myEmail);
                     emailAndName = (HashMap<String, String>) data.getSerializableExtra(GoogleLoginActivity.EXTRA_EMAILLIST);
-
-                    fbs.makePlayList(masterList, emailAndName, 2018072, -122.08400000000002, 37.421998333333335);
                 }
                 break;
 

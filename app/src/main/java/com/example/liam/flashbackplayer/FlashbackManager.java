@@ -42,6 +42,9 @@ public class FlashbackManager {
         this.shouldUpdate = true;
     }
 
+    public void makeVibeList(final UIManager uiManager, FirebaseService fbs) {
+        fbs.makePlayList(uiManager, MainActivity.masterList, MainActivity.emailAndName, yearAndDay, longitude, latitude);
+    }
 
     public void rankSongs(ArrayList<Song> songs) {
         //create a priority queue for ranking
@@ -53,45 +56,8 @@ public class FlashbackManager {
         for (int counter = 0; counter < songs.size(); counter++) {
             Song theSong = songs.get(counter);
 
-            //1 check if has prev location by traversing the location list in a song
-            for (int i = 0; i < theSong.getLocations().size(); i++) {
-                double dist = Math.sqrt(Math.pow(longitude - theSong.getLocations().get(i).longitude, 2) +
-                        Math.pow(latitude - theSong.getLocations().get(i).latitude, 2));
-                if (dist < 0.001) {
-                    // increase the ranking and quit
-                    theSong.increaseRanking();
-                    break;
-                }
-            }
-
-            //2 check if has same timePeriod
-            if (5 <= hour && hour < 11) {
-                if (theSong.getTimePeriod()[0] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            } else if (11 <= hour && hour < 16) {
-                if (theSong.getTimePeriod()[1] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            } else {
-                if (theSong.getTimePeriod()[2] > 0)
-                    // increase the ranking
-                    theSong.increaseRanking();
-            }
-
-            //3 check the day of week
-            if (theSong.getDay()[this.dayOfWeek - 1] == 1)
-                // increase the ranking
-                theSong.increaseRanking();
-
-            //4 check if favorited
-            if (theSong.getPreference() == Song.FAVORITE)
-                // increase the ranking
-                theSong.increaseRanking();
-
             //store the songs into PQ
-            if (theSong.getPreference() == Song.FAVORITE ||
-                    (theSong.getPreference() == Song.NEUTRAL && theSong.getLocations().isEmpty() == false)){
+            if (theSong.getPreference() != Song.DISLIKE) {
                 this.rankings.add(theSong);
             }
         }
@@ -124,7 +90,7 @@ public class FlashbackManager {
             Log.e("GEOCODER", e.getMessage());
         }
 
-        if(!shouldUpdate) {
+        if (!shouldUpdate) {
             calendar.setTime(new Date(mockMillis));
         }
         //get time info to store
@@ -207,6 +173,7 @@ public class FlashbackManager {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         currTime = sdf.format(new Date(millis));
     }
+
     public double getLongitude() {
         return longitude;
     }

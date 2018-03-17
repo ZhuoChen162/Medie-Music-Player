@@ -23,17 +23,20 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 public class FirebaseService {
     private FirebaseDatabase database;
     protected MusicLoader loader;
     private MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+    private FlashbackManager flashbackManager;
     private UrlList urlList;
 
-    public FirebaseService(UrlList urlList, MusicLoader loader) {
+    public FirebaseService(UrlList urlList, MusicLoader loader, FlashbackManager flashbackManager) {
         database = FirebaseDatabase.getInstance();
         this.urlList = urlList;
         this.loader = loader;
+        this.flashbackManager = flashbackManager;
     }
 
     // Get the songs that exist only on the cloud
@@ -68,7 +71,7 @@ public class FirebaseService {
         });
     }
 
-    public void makePlayList(final ArrayList<Song> songList, final HashMap<String, String> friends, final int curYearAndDay, final double curLon, final double curLat) {
+    public void makePlayList(final UIManager uiManager, final ArrayList<Song> songList, final HashMap<String, String> friends, final int curYearAndDay, final double curLon, final double curLat) {
         DatabaseReference cloudHistListRef = database.getReference("songsInfo");
         cloudHistListRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -77,6 +80,7 @@ public class FirebaseService {
                     DataSnapshot curSongHist = dataSnapshot.child(curSong.getId());
                     if (curSongHist == null) {
                         curSong.setRanking(0);
+                        curSong.setPlayedBy("");
                         continue;
                     }
 
@@ -116,6 +120,14 @@ public class FirebaseService {
 
                 for (Song song : songList)
                     Log.d("RANKINGGGGGGGGGG", String.valueOf(song.getRanking()));
+
+                flashbackManager.rankSongs(songList);
+                PriorityQueue<Song> pq = flashbackManager.getRankList();
+
+                //add songs in pq into the flashbackList
+                while (!pq.isEmpty())
+                    MainActivity.flashbackList.add(pq.poll());
+                uiManager.populateUI(MainActivity.MODE_VIBE);
             }
 
             @Override

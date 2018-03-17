@@ -32,12 +32,12 @@ class AnonymousName {
     String getAnonmyousName(String AnonymousEmail) {
         //check if has this AnonymousEmail
         if (animalNameHM.containsKey(AnonymousEmail))
-            return "Anonymous " + animalNameHM.get(AnonymousEmail);
+            return "Anony " + animalNameHM.get(AnonymousEmail);
         else {
             //assign to an animal and add to HM (key email, value: animal name)
             String name = animalName.pop();
             animalNameHM.put(AnonymousEmail, name);
-            return "Anonymous " + name;
+            return "Anony " + name;
         }
     }
 }

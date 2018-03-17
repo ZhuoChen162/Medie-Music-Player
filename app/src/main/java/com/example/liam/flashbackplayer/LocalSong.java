@@ -54,6 +54,7 @@ public class LocalSong implements Song {
         this.locations = new ArrayList<SongLocation>();
         this.preference = NEUTRAL;
         this.ranking = 0;
+        this.playedBy = "";
     }
 
     public LocalSong(String name, String albumName, String id, String url) {
@@ -63,6 +64,8 @@ public class LocalSong implements Song {
         this.url = url;
         this.source = null;
         this.ranking = 0;
+        this.playedBy = "";
+        this.preference = NEUTRAL;
     }
 
     /**
