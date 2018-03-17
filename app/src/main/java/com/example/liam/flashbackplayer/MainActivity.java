@@ -96,6 +96,11 @@ public class MainActivity extends AppCompatActivity {
         onComplete = new BroadcastReceiver() {
             public void onReceive(Context ctxt, Intent intent) {
                 File downloadedFile = loader.getLastDownloadedFile();
+                loader.populateAlbumWithSong(downloadedFile);
+                loader.generateMList();
+                albumMap = loader.getAlbumMap();
+                masterList = loader.getmList();
+                uiManager.populateUI(displayMode);
                 //do something with the last downloaded file here...
             }
         };
@@ -207,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 prefs.saveObjectWithSongs(history, "history");
             }
             prefs.saveInt(displayMode, "mode");
+            prefs.saveInt(masterList.size(), "totalSize");
         }
         if (uiManager != null) {
             uiManager.setIsActive(false);
@@ -290,14 +296,14 @@ public class MainActivity extends AppCompatActivity {
         //defaults to song mode
         displayMode = prefs.getInt("mode");
         isAlbumExpanded = false;
+        //get Song objects from local music files
         loader = new MusicLoader(new MediaMetadataRetriever(), prefs, this);
         loader.init();
+        loader.generateMList();
         albumMap = loader.getAlbumMap();
-        masterList = new ArrayList<Song>();
-        for (Album toAdd : albumMap.values()) {
-            masterList.addAll(toAdd.getSongList());
-        }
-        MusicController musicController = new MusicController(mediaPlayer, this);
+        masterList = loader.getmList();
+
+        musicController = new MusicController(mediaPlayer, this);
         uiManager = new UIManager(this);
 
         urlList = new UrlList(masterList);
