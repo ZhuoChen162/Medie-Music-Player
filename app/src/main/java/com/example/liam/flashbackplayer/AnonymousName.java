@@ -2,7 +2,9 @@ package com.example.liam.flashbackplayer;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-
+/**
+ * This is a AnonymousName class will assign an unique AnonymousName to each Anonymous person 
+ */
 class AnonymousName {
 
     LinkedList<String> animalName;
