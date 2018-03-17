@@ -325,8 +325,8 @@ public class UIManager {
             public void run() {
                 songName.setText(name);
                 AlbumName.setText("Album: " + album);
-                currentTime.setText("PlayTime: " + currTime);
-                currentLocation.setText("Location: " + loc);
+                currentTime.setText(currTime);
+                currentLocation.setText(loc);
 
             }
 
